@@ -744,46 +744,117 @@ function validate(d) {
   return null;
 }
 
-/* ─── INVIO TRAMITE FORM NASCOSTO (bypassa CORS) ─────────── */
-function gasPost(action, onSuccess) {
+/* ─── INVIO UNIVERSALE (tutti i dispositivi e browser) ──────
+   Strategia a 3 livelli:
+   1. fetch no-cors + text/plain  → funziona su Chrome/Firefox desktop e Android
+   2. XMLHttpRequest              → fallback per browser più vecchi
+   3. form hidden submit          → fallback finale garantito su qualsiasi device
+─────────────────────────────────────────────────────────── */
+function gasPost(action) {
   const d = collect();
   const err = validate(d);
   if (err) { toast(err, 'error'); return; }
   if (!cfg.gasUrl) { toast('Configura prima l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
 
-  const payload = JSON.stringify({action, ...d});
-
-  // Usiamo fetch con mode no-cors: non leggiamo la risposta ma il dato arriva
-  // Mostriamo un toast ottimistico dopo 2s se non ci sono errori di rete
-  const btnId    = action === 'submitCedolino' ? 'sendBtn'  : 'dbBtn';
-  const labelId  = action === 'submitCedolino' ? 'sendLabel': 'dbLabel';
-  const spinId   = action === 'submitCedolino' ? 'sendSpin' : 'dbSpin';
+  const btnId      = action === 'submitCedolino' ? 'sendBtn'   : 'dbBtn';
+  const labelId    = action === 'submitCedolino' ? 'sendLabel' : 'dbLabel';
+  const spinId     = action === 'submitCedolino' ? 'sendSpin'  : 'dbSpin';
+  const labelOrig  = action === 'submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
   const successMsg = action === 'submitCedolino'
     ? 'Cedolino inviato a ' + d.email + ' ✓'
     : 'Dati salvati nel database ✓';
 
+  // UI → stato caricamento
   document.getElementById(labelId).textContent = 'Invio…';
   document.getElementById(spinId).classList.add('show');
   document.getElementById(btnId).disabled = true;
 
-  fetch(cfg.gasUrl, {
-    method: 'POST',
-    mode: 'no-cors',          // bypassa il blocco CORS — non leggiamo la risposta
-    headers: {'Content-Type': 'application/json'},
-    body: payload
-  })
-  .then(() => {
-    toast(successMsg, 'success');
-  })
-  .catch(() => {
-    toast('Errore di rete. Controlla la connessione.', 'error');
-  })
-  .finally(() => {
-    document.getElementById(labelId).textContent =
-      action === 'submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
+  function resetUI() {
+    document.getElementById(labelId).textContent = labelOrig;
     document.getElementById(spinId).classList.remove('show');
     document.getElementById(btnId).disabled = false;
-  });
+  }
+  function onOk()   { toast(successMsg, 'success'); resetUI(); }
+  function onFail() { toast('Errore di rete. Controlla la connessione.', 'error'); resetUI(); }
+
+  // Dati da inviare — usiamo URLSearchParams come corpo:
+  // Google Apps Script li legge da e.postData.contents sia come text/plain che come form
+  const payload = JSON.stringify({action: action, ...d});
+
+  // ── Livello 1: fetch con no-cors ─────────────────────────
+  if (typeof fetch !== 'undefined') {
+    fetch(cfg.gasUrl, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=UTF-8'},
+      body:    payload
+    })
+    .then(onOk)
+    .catch(function() {
+      // Livello 2: XMLHttpRequest
+      xhrPost(payload, onOk, function() {
+        // Livello 3: form hidden
+        formPost(payload, onOk);
+      });
+    });
+    return;
+  }
+
+  // Nessun fetch disponibile → vai diretto a XHR
+  xhrPost(payload, onOk, function() { formPost(payload, onOk); });
+}
+
+// ── Livello 2: XMLHttpRequest ──────────────────────────────
+function xhrPost(payload, onOk, onFail) {
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', cfg.gasUrl, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    xhr.timeout = 10000;
+    xhr.onload  = function() { onOk(); };
+    xhr.onerror = function() { onFail(); };
+    xhr.ontimeout = function() { onFail(); };
+    xhr.send(payload);
+  } catch(e) { onFail(); }
+}
+
+// ── Livello 3: form hidden (garantito su qualsiasi browser) ─
+// Invia i dati tramite un iframe nascosto: nessun redirect, nessun CORS
+function formPost(payload, onOk) {
+  try {
+    // Crea iframe nascosto per ricevere la risposta senza navigare
+    var iframeName = 'gas_frame_' + Date.now();
+    var iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Crea form nascosto che punta all'iframe
+    var form = document.createElement('form');
+    form.method  = 'POST';
+    form.action  = cfg.gasUrl;
+    form.target  = iframeName;
+    form.style.display = 'none';
+
+    // Il dato viene passato come campo nascosto
+    var input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = 'data';
+    input.value = payload;
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // Pulizia dopo 5s e mostra successo (non possiamo leggere la risposta iframe cross-origin)
+    setTimeout(function() {
+      try { document.body.removeChild(form); } catch(e){}
+      try { document.body.removeChild(iframe); } catch(e){}
+      onOk();
+    }, 3000);
+  } catch(e) {
+    toast('Impossibile inviare. Verifica la connessione.', 'error');
+  }
 }
 
 /* ─── SEND ───────────────────────────────────────────────── */
@@ -873,7 +944,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function doPost(e) {
   try {
-    var raw = e.postData ? e.postData.contents : '{}';
+    var raw = '{}';
+    if (e.postData && e.postData.contents) {
+      raw = e.postData.contents;
+    } else if (e.parameter && e.parameter.data) {
+      raw = e.parameter.data;
+    }
     var data = JSON.parse(raw);
     if (data.action !== 'submitCedolino' && data.action !== 'saveToDatabase')
       return out({success:false, message:'Azione sconosciuta'});

@@ -276,6 +276,8 @@
     .btn-export:hover, .btn-export:active { background: rgba(255,255,255,0.2); }
     .btn-ghost { background: transparent; border: 1.5px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.6); }
     .btn-ghost:hover, .btn-ghost:active { color: white; border-color: rgba(255,255,255,0.45); }
+    .btn-db { background: rgba(255,220,50,0.15); border: 1.5px solid rgba(255,220,50,0.4); color: #ffe566; }
+    .btn-db:hover, .btn-db:active { background: rgba(255,220,50,0.26); border-color: rgba(255,220,50,0.7); }
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,71,93,0.25); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
     .spinner.show { display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -500,6 +502,11 @@
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         <span id="sendLabel">Invia Cedolino</span>
         <span class="spinner" id="sendSpin"></span>
+      </button>
+      <button class="btn btn-db" id="dbBtn" onclick="sendToDatabase()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+        <span id="dbLabel">Invia a Database</span>
+        <span class="spinner" id="dbSpin"></span>
       </button>
     </div>
   </div>
@@ -785,6 +792,31 @@ function exportExcel() {
   toast('File Excel scaricato: ' + fn, 'success');
 }
 
+/* ─── SEND TO DATABASE ───────────────────────────────────── */
+async function sendToDatabase() {
+  const d = collect();
+  const err = validate(d);
+  if (err) { toast(err, 'error'); return; }
+  if (!cfg.gasUrl) { toast('Configura prima l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
+  document.getElementById('dbLabel').textContent = 'Invio…';
+  document.getElementById('dbSpin').classList.add('show');
+  document.getElementById('dbBtn').disabled = true;
+  try {
+    const resp = await fetch(cfg.gasUrl, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'saveToDatabase', ...d})
+    });
+    const res = await resp.json();
+    if (res.success) toast('Dati salvati nel database ✓', 'success');
+    else toast('Errore: ' + (res.message || 'risposta non valida'), 'error');
+  } catch(e) {
+    toast('Errore di connessione. Verifica l\'URL dello script.', 'error');
+  }
+  document.getElementById('dbLabel').textContent = 'Invia a Database';
+  document.getElementById('dbSpin').classList.remove('show');
+  document.getElementById('dbBtn').disabled = false;
+}
+
 /* ─── RESET ──────────────────────────────────────────────── */
 function resetForm() {
   if (!confirm('Azzerare il modulo? I dati non salvati verranno persi.')) return;
@@ -837,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    if (data.action !== 'submitCedolino')
+    if (data.action !== 'submitCedolino' && data.action !== 'saveToDatabase')
       return out({success:false, message:'Azione sconosciuta'});
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -867,8 +899,8 @@ function doPost(e) {
                      v.mezzo, v.targa, v.eta, v.nota, v.esito]);
     });
 
-    // ── Invio E-MAIL al cliente ─────────────────────────────────────────
-    var sub  = 'Cedolino Intervento Italbatterie n° ' + data.numCedolino;
+    // ── Solo "submitCedolino" invia anche l'email ───────────────────────
+    if (data.action === 'submitCedolino') {
     var body = 'Gentile ' + data.nome + ' ' + data.cognome + ',\n\n'
              + 'Le trasmettiamo il cedolino di intervento n° ' + data.numCedolino
              + ' del ' + data.dataIntervento + '.\n\n'
@@ -884,6 +916,7 @@ function doPost(e) {
     body += 'Cordiali saluti,\nItalbatterie\n';
 
     MailApp.sendEmail({ to: data.email, subject: sub, body: body });
+    } // fine if submitCedolino
 
     return out({success:true});
   } catch(err) {

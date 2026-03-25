@@ -1066,7 +1066,7 @@ function doPost(e) {
         to:          data.email,
         subject:     subject,
         htmlBody:    emailBody,
-        attachments: [pdf.getAs(MimeType.PDF).setName(nomePDF)]
+        attachments: [pdf.setName(nomePDF)]
       });
     }
 

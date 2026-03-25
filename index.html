@@ -908,18 +908,6 @@ function resetForm() {
   addRow(); upd();
   toast('Nuovo cedolino pronto', 'info');
 }
-  // Auto new number
-  const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
-  localStorage.setItem('ib_ctr', cnt);
-  const now = new Date();
-  const yy  = now.getFullYear();
-  const mm  = String(now.getMonth()+1).padStart(2,'0');
-  const dd  = String(now.getDate()).padStart(2,'0');
-  document.getElementById('numCed').value = `IB-${yy}-${mm}-${dd}-${String(cnt).padStart(3,'0')}`;
-  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
-  addRow(); upd();
-  toast('Nuovo cedolino pronto', 'info');
-}
 
 /* ─── TOAST ──────────────────────────────────────────────── */
 let tTimer;

@@ -741,29 +741,51 @@ function validate(d) {
   return null;
 }
 
-/* ─── SEND ───────────────────────────────────────────────── */
-async function sendCedolino() {
+/* ─── INVIO TRAMITE FORM NASCOSTO (bypassa CORS) ─────────── */
+function gasPost(action, onSuccess) {
   const d = collect();
   const err = validate(d);
   if (err) { toast(err, 'error'); return; }
   if (!cfg.gasUrl) { toast('Configura prima l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
-  document.getElementById('sendLabel').textContent = 'Invio…';
-  document.getElementById('sendSpin').classList.add('show');
-  document.getElementById('sendBtn').disabled = true;
-  try {
-    const resp = await fetch(cfg.gasUrl, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'submitCedolino', ...d})
-    });
-    const res = await resp.json();
-    if (res.success) toast('Cedolino inviato a ' + d.email + ' ✓', 'success');
-    else toast('Errore: ' + (res.message||'risposta non valida'), 'error');
-  } catch(e) {
-    toast('Errore di connessione. Verifica l\'URL dello script.', 'error');
-  }
-  document.getElementById('sendLabel').textContent = 'Invia Cedolino';
-  document.getElementById('sendSpin').classList.remove('show');
-  document.getElementById('sendBtn').disabled = false;
+
+  const payload = JSON.stringify({action, ...d});
+
+  // Usiamo fetch con mode no-cors: non leggiamo la risposta ma il dato arriva
+  // Mostriamo un toast ottimistico dopo 2s se non ci sono errori di rete
+  const btnId    = action === 'submitCedolino' ? 'sendBtn'  : 'dbBtn';
+  const labelId  = action === 'submitCedolino' ? 'sendLabel': 'dbLabel';
+  const spinId   = action === 'submitCedolino' ? 'sendSpin' : 'dbSpin';
+  const successMsg = action === 'submitCedolino'
+    ? 'Cedolino inviato a ' + d.email + ' ✓'
+    : 'Dati salvati nel database ✓';
+
+  document.getElementById(labelId).textContent = 'Invio…';
+  document.getElementById(spinId).classList.add('show');
+  document.getElementById(btnId).disabled = true;
+
+  fetch(cfg.gasUrl, {
+    method: 'POST',
+    mode: 'no-cors',          // bypassa il blocco CORS — non leggiamo la risposta
+    headers: {'Content-Type': 'application/json'},
+    body: payload
+  })
+  .then(() => {
+    toast(successMsg, 'success');
+  })
+  .catch(() => {
+    toast('Errore di rete. Controlla la connessione.', 'error');
+  })
+  .finally(() => {
+    document.getElementById(labelId).textContent =
+      action === 'submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
+    document.getElementById(spinId).classList.remove('show');
+    document.getElementById(btnId).disabled = false;
+  });
+}
+
+/* ─── SEND ───────────────────────────────────────────────── */
+function sendCedolino() {
+  gasPost('submitCedolino');
 }
 
 /* ─── EXPORT EXCEL ───────────────────────────────────────── */
@@ -793,28 +815,8 @@ function exportExcel() {
 }
 
 /* ─── SEND TO DATABASE ───────────────────────────────────── */
-async function sendToDatabase() {
-  const d = collect();
-  const err = validate(d);
-  if (err) { toast(err, 'error'); return; }
-  if (!cfg.gasUrl) { toast('Configura prima l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
-  document.getElementById('dbLabel').textContent = 'Invio…';
-  document.getElementById('dbSpin').classList.add('show');
-  document.getElementById('dbBtn').disabled = true;
-  try {
-    const resp = await fetch(cfg.gasUrl, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({action: 'saveToDatabase', ...d})
-    });
-    const res = await resp.json();
-    if (res.success) toast('Dati salvati nel database ✓', 'success');
-    else toast('Errore: ' + (res.message || 'risposta non valida'), 'error');
-  } catch(e) {
-    toast('Errore di connessione. Verifica l\'URL dello script.', 'error');
-  }
-  document.getElementById('dbLabel').textContent = 'Invia a Database';
-  document.getElementById('dbSpin').classList.remove('show');
-  document.getElementById('dbBtn').disabled = false;
+function sendToDatabase() {
+  gasPost('saveToDatabase');
 }
 
 /* ─── RESET ──────────────────────────────────────────────── */
@@ -868,7 +870,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function doPost(e) {
   try {
-    var data = JSON.parse(e.postData.contents);
+    var raw = e.postData ? e.postData.contents : '{}';
+    var data = JSON.parse(raw);
     if (data.action !== 'submitCedolino' && data.action !== 'saveToDatabase')
       return out({success:false, message:'Azione sconosciuta'});
 

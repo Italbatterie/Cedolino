@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Italbatterie — Cedolino Intervento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #D72B2B;
+      --red-dark: #A81C1C;
+      --red-light: #FF4444;
+      --black: #0D0D0D;
+      --dark: #1A1A1A;
+      --panel: #222222;
+      --panel2: #2C2C2C;
+      --border: #3A3A3A;
+      --text: #E8E8E8;
+      --text-muted: #888888;
+      --white: #FFFFFF;
+      --input-bg: #181818;
+      --input-border: #3D3D3D;
+      --input-focus: #D72B2B;
+      --success: #2ECC71;
+      --warning: #F39C12;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 0% 0%, rgba(215,43,43,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 100% 100%, rgba(215,43,43,0.04) 0%, transparent 50%);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      border-bottom: 3px solid var(--red);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 80px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(215,43,43,0.15);
+    }
+    .header-logo {
+      width: 52px; height: 52px;
+      background: var(--red);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 22px;
+      color: white;
+      letter-spacing: -1px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .header-logo img.loaded { display: block; }
+    .header-logo span { display: block; }
+    .header-info h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 26px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1;
+    }
+    .header-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .header-badge {
+      margin-left: auto;
+      background: rgba(215,43,43,0.15);
+      border: 1px solid rgba(215,43,43,0.3);
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--red-light);
+      font-weight: 600;
+    }
+
+    /* ── MAIN ── */
+    .main { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+    .section-num {
+      width: 26px; height: 26px;
+      background: var(--red);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px;
+      margin-bottom: 28px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: #555; }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── FIELDS ── */
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field label {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .field label .req { color: var(--red); margin-left: 2px; }
+    .field input, .field select, .field textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(215,43,43,0.12);
+    }
+    .field textarea { resize: vertical; min-height: 72px; }
+    .field select option { background: var(--panel); }
+
+    /* ── VEHICLE TABLE ── */
+    .vehicle-section { margin-bottom: 28px; }
+    .vehicle-table-wrap { overflow-x: auto; }
+    .vehicle-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .vehicle-table th {
+      background: var(--panel2);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 2px solid var(--red);
+      white-space: nowrap;
+    }
+    .vehicle-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .vehicle-table tr:last-child td { border-bottom: none; }
+    .vehicle-table td input, .vehicle-table td select, .vehicle-table td textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+      min-width: 80px;
+    }
+    .vehicle-table td input:focus, .vehicle-table td select:focus, .vehicle-table td textarea:focus {
+      border-color: var(--input-focus);
+    }
+    .vehicle-table td textarea { min-height: 52px; resize: vertical; }
+    .vehicle-table td select option { background: var(--panel); }
+    .th-mezzo { min-width: 120px; }
+    .th-targa { min-width: 90px; }
+    .th-eta { min-width: 90px; }
+    .th-nota { min-width: 150px; }
+    .th-esito { min-width: 140px; }
+    .th-del { width: 44px; }
+
+    .row-del-btn {
+      background: transparent;
+      border: 1px solid #555;
+      border-radius: 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 7px 10px;
+      font-size: 16px;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .row-del-btn:hover { background: rgba(215,43,43,0.15); border-color: var(--red); color: var(--red-light); }
+
+    /* ── ADD ROW ── */
+    .add-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 20px;
+      margin-top: 12px;
+      width: 100%;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .add-row-btn:hover {
+      border-color: var(--red);
+      color: var(--red-light);
+      background: rgba(215,43,43,0.05);
+    }
+    .add-row-btn svg { flex-shrink: 0; }
+
+    /* ── SIGNATURE ── */
+    .sig-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sig-canvas-wrap {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--input-bg);
+      transition: border-color 0.2s;
+      cursor: crosshair;
+    }
+    .sig-canvas-wrap.has-sig { border-color: var(--red); border-style: solid; }
+    .sig-canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 160px;
+      touch-action: none;
+    }
+    .sig-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .sig-placeholder svg { opacity: 0.25; }
+    .sig-placeholder span {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .sig-clear-btn {
+      align-self: flex-end;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      font-size: 12px;
+      padding: 7px 16px;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .sig-clear-btn:hover { border-color: var(--red-light); color: var(--red-light); }
+
+    /* ── DATE/NUMBER BAR ── */
+    .meta-bar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .meta-bar .field { flex: 1; min-width: 160px; }
+
+    /* ── ACTIONS ── */
+    .actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--red);
+      color: white;
+      box-shadow: 0 4px 20px rgba(215,43,43,0.3);
+    }
+    .btn-primary:hover {
+      background: var(--red-light);
+      box-shadow: 0 6px 28px rgba(215,43,43,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    .btn-export {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-export:hover {
+      border-color: var(--success);
+      color: var(--success);
+      background: rgba(46,204,113,0.07);
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 22px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-width: 340px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-color: var(--success); }
+    #toast.error { border-color: var(--red); }
+    .toast-icon { font-size: 20px; }
+
+    /* ── MODAL SETUP ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      max-width: 520px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      transform: scale(0.95);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .modal p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+    .modal .field { margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+    .setup-note {
+      background: rgba(215,43,43,0.08);
+      border: 1px solid rgba(215,43,43,0.2);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .setup-note strong { color: var(--red-light); }
+    .setup-note code {
+      background: var(--input-bg);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    /* ── PROGRESS ── */
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 36px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--red), var(--red-light));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 8px 0 24px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .header { padding: 0 16px; }
+      .main { padding: 24px 12px 60px; }
+      .card { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo" id="logoBox">
+    <img id="logoImg" alt="Logo" />
+    <span id="logoText">IB</span>
+  </div>
+  <div class="header-info">
+    <h1>Italbatterie</h1>
+    <p>Cedolino di Intervento</p>
+  </div>
+  <div class="header-badge">Rev. 2024</div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <!-- META BAR -->
+  <div class="meta-bar">
+    <div class="field">
+      <label>N° Cedolino <span class="req">*</span></label>
+      <input type="text" id="numCedolino" placeholder="es. IB-2024-001" oninput="updateProgress()"/>
+    </div>
+    <div class="field">
+      <label>Data Intervento <span class="req">*</span></label>
+      <input type="date" id="dataIntervento" oninput="updateProgress()"/>
+    </div>
+    <div class="field">
+      <label>Tecnico Responsabile</label>
+      <input type="text" id="tecnico" placeholder="Nome tecnico"/>
+    </div>
+  </div>
+
+  <!-- DATI CLIENTE -->
+  <div class="section-title"><span class="section-num">1</span> Dati Cliente</div>
+  <div class="card">
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="field">
+        <label>Nome <span class="req">*</span></label>
+        <input type="text" id="nome" placeholder="Mario" oninput="updateProgress()"/>
+      </div>
+      <div class="field">
+        <label>Cognome <span class="req">*</span></label>
+        <input type="text" id="cognome" placeholder="Rossi" oninput="updateProgress()"/>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Azienda <span class="req">*</span></label>
+        <input type="text" id="azienda" placeholder="Nome Azienda Srl" oninput="updateProgress()"/>
+      </div>
+      <div class="field">
+        <label>Telefono</label>
+        <input type="tel" id="telefono" placeholder="+39 000 000 0000"/>
+      </div>
+      <div class="field">
+        <label>E-mail <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="email@azienda.it" oninput="updateProgress()"/>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="field">
+        <label>Indirizzo</label>
+        <input type="text" id="indirizzo" placeholder="Via Roma 1, 20121 Milano MI"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABELLA VEICOLI -->
+  <div class="section-title"><span class="section-num">2</span> Veicoli Aziendali</div>
+  <div class="card vehicle-section">
+    <div class="vehicle-table-wrap">
+      <table class="vehicle-table" id="vehicleTable">
+        <thead>
+          <tr>
+            <th class="th-mezzo">Mezzo</th>
+            <th class="th-targa">Targa</th>
+            <th class="th-eta">Età Batteria</th>
+            <th class="th-nota">Nota di Intervento</th>
+            <th class="th-esito">Esito Intervento</th>
+            <th class="th-del"></th>
+          </tr>
+        </thead>
+        <tbody id="vehicleBody">
+          <!-- rows inserted via JS -->
+        </tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addVehicleRow()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Aggiungi Veicolo
+    </button>
+  </div>
+
+  <!-- FIRMA DIGITALE -->
+  <div class="section-title"><span class="section-num">3</span> Firma Cliente</div>
+  <div class="card">
+    <div class="sig-container">
+      <div class="sig-canvas-wrap" id="sigWrap">
+        <canvas id="sigCanvas"></canvas>
+        <div class="sig-placeholder" id="sigPlaceholder">
+          <svg width="36" height="36" fill="none" stroke="white" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+          </svg>
+          <span>Firma qui con il dito o il mouse</span>
+        </div>
+      </div>
+      <button class="sig-clear-btn" onclick="clearSignature()">✕ Cancella Firma</button>
+    </div>
+  </div>
+
+  <!-- NOTE -->
+  <div class="section-title"><span class="section-num">4</span> Note Aggiuntive</div>
+  <div class="card">
+    <div class="field">
+      <label>Note generali</label>
+      <textarea id="noteGenerali" placeholder="Eventuali note, raccomandazioni o avvisi per il cliente..." style="min-height:100px"></textarea>
+    </div>
+  </div>
+
+  <!-- AZIONI -->
+  <div class="divider"></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="sendCedolino()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      Invia Cedolino
+    </button>
+    <button class="btn btn-export" onclick="exportExcel()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v10m0 0l-3-3m3 3l3-3M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+      Esporta Excel
+    </button>
+    <button class="btn btn-secondary" onclick="resetForm()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Nuovo Cedolino
+    </button>
+    <button class="btn btn-secondary" onclick="openSetup()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      Configura
+    </button>
+  </div>
+</main>
+
+<!-- SETUP MODAL -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <h2>⚙️ Configurazione</h2>
+    <p>Inserisci i parametri per il collegamento al Google Sheets e l'invio e-mail automatico.</p>
+    <div class="setup-note">
+      <strong>Come configurare Google Sheets:</strong><br/>
+      1. Crea un Google Sheet → Strumenti → <code>App Script</code><br/>
+      2. Incolla lo script fornito nel file <code>README_SETUP.txt</code><br/>
+      3. Distribuisci come Web App e copia qui l'URL generato.<br/><br/>
+      <strong>Logo:</strong> Inserisci il percorso o URL del logo aziendale.
+    </div>
+    <div class="field">
+      <label>Google Apps Script URL (Web App)</label>
+      <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec"/>
+    </div>
+    <div class="field">
+      <label>E-mail Mittente (Italbatterie)</label>
+      <input type="email" id="senderEmail" placeholder="info@italbatterie.it"/>
+    </div>
+    <div class="field">
+      <label>URL o Percorso Logo Aziendale</label>
+      <input type="text" id="logoUrl" placeholder="https://... oppure logo.png"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeSetup()">Annulla</button>
+      <button class="btn btn-primary" onclick="saveSetup()">Salva Configurazione</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg"></span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+let config = JSON.parse(localStorage.getItem('ib_config') || '{}');
+
+function loadConfig() {
+  if (config.gasUrl) document.getElementById('gasUrl').value = config.gasUrl;
+  if (config.senderEmail) document.getElementById('senderEmail').value = config.senderEmail;
+  if (config.logoUrl) {
+    document.getElementById('logoUrl').value = config.logoUrl;
+    applyLogo(config.logoUrl);
+  }
+}
+function applyLogo(url) {
+  const img = document.getElementById('logoImg');
+  const txt = document.getElementById('logoText');
+  img.src = url;
+  img.onload = () => { img.classList.add('loaded'); txt.style.display = 'none'; };
+  img.onerror = () => { img.classList.remove('loaded'); txt.style.display = 'block'; };
+}
+
+// ─── SETUP MODAL ──────────────────────────────────────────
+function openSetup() { document.getElementById('setupModal').classList.add('open'); loadConfig(); }
+function closeSetup() { document.getElementById('setupModal').classList.remove('open'); }
+function saveSetup() {
+  config = {
+    gasUrl: document.getElementById('gasUrl').value.trim(),
+    senderEmail: document.getElementById('senderEmail').value.trim(),
+    logoUrl: document.getElementById('logoUrl').value.trim()
+  };
+  localStorage.setItem('ib_config', JSON.stringify(config));
+  if (config.logoUrl) applyLogo(config.logoUrl);
+  closeSetup();
+  toast('Configurazione salvata', 'success');
+}
+
+// ─── VEHICLE TABLE ────────────────────────────────────────
+let rowCount = 0;
+function addVehicleRow(data = {}) {
+  rowCount++;
+  const id = rowCount;
+  const tr = document.createElement('tr');
+  const esiti = ['','Batteria sostituita','Batteria caricata','Batteria non riparabile','Controllo eseguito','Collaudo OK','Intervento rimandato'];
+  const esitoOptions = esiti.map(e => `<option value="${e}" ${data.esito===e?'selected':''}>${e||'— Seleziona —'}</option>`).join('');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="es. Furgone, Auto…" value="${data.mezzo||''}"/></td>
+    <td><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="${data.targa||''}"/></td>
+    <td><input type="text" placeholder="es. 2 anni" value="${data.eta||''}"/></td>
+    <td><textarea placeholder="Descrizione intervento…">${data.nota||''}</textarea></td>
+    <td><select>${esitoOptions}</select></td>
+    <td><button class="row-del-btn" onclick="deleteRow(this)" title="Elimina riga">✕</button></td>
+  `;
+  document.getElementById('vehicleBody').appendChild(tr);
+  updateProgress();
+}
+function deleteRow(btn) {
+  btn.closest('tr').remove();
+  updateProgress();
+}
+function getVehicles() {
+  const rows = document.querySelectorAll('#vehicleBody tr');
+  return Array.from(rows).map(tr => {
+    const inputs = tr.querySelectorAll('input, textarea, select');
+    return {
+      mezzo: inputs[0].value.trim(),
+      targa: inputs[1].value.trim().toUpperCase(),
+      eta: inputs[2].value.trim(),
+      nota: inputs[3].value.trim(),
+      esito: inputs[4].value.trim()
+    };
+  });
+}
+
+// ─── SIGNATURE ────────────────────────────────────────────
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+let isDrawing = false, hasSig = false;
+
+function resizeCanvas() {
+  const wrap = document.getElementById('sigWrap');
+  const ratio = window.devicePixelRatio || 1;
+  const w = wrap.clientWidth;
+  const h = 160;
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(ratio, ratio);
+  ctx.strokeStyle = '#E8E8E8';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return { x: src.clientX - r.left, y: src.clientY - r.top };
+}
+canvas.addEventListener('mousedown', e => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); setSigState(true); });
+canvas.addEventListener('mouseup', () => isDrawing = false);
+canvas.addEventListener('mouseleave', () => isDrawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive:false});
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); setSigState(true); }, {passive:false});
+canvas.addEventListener('touchend', () => isDrawing = false);
+
+function setSigState(state) {
+  hasSig = state;
+  document.getElementById('sigPlaceholder').style.opacity = state ? '0' : '1';
+  document.getElementById('sigWrap').classList.toggle('has-sig', state);
+  updateProgress();
+}
+function clearSignature() {
+  const ratio = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+  setSigState(false);
+}
+function getSignatureDataURL() {
+  return hasSig ? canvas.toDataURL('image/png') : null;
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────
+function updateProgress() {
+  const fields = ['nome','cognome','azienda','email','numCedolino','dataIntervento'];
+  const filled = fields.filter(id => document.getElementById(id).value.trim() !== '').length;
+  const vCount = document.querySelectorAll('#vehicleBody tr').length;
+  const sigOk = hasSig ? 1 : 0;
+  const total = fields.length + 1 + 1; // fields + vehicles>0 + sig
+  const score = filled + (vCount > 0 ? 1 : 0) + sigOk;
+  document.getElementById('progressFill').style.width = Math.min(100, Math.round(score / total * 100)) + '%';
+}
+
+// ─── COLLECT DATA ─────────────────────────────────────────
+function collectData() {
+  return {
+    numCedolino: document.getElementById('numCedolino').value.trim(),
+    dataIntervento: document.getElementById('dataIntervento').value,
+    tecnico: document.getElementById('tecnico').value.trim(),
+    nome: document.getElementById('nome').value.trim(),
+    cognome: document.getElementById('cognome').value.trim(),
+    azienda: document.getElementById('azienda').value.trim(),
+    indirizzo: document.getElementById('indirizzo').value.trim(),
+    telefono: document.getElementById('telefono').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    noteGenerali: document.getElementById('noteGenerali').value.trim(),
+    veicoli: getVehicles(),
+    firmaDataURL: getSignatureDataURL(),
+    timestamp: new Date().toISOString()
+  };
+}
+
+function validate(data) {
+  if (!data.nome) return 'Inserisci il nome del cliente.';
+  if (!data.cognome) return 'Inserisci il cognome del cliente.';
+  if (!data.azienda) return 'Inserisci il nome dell\'azienda.';
+  if (!data.email) return 'Inserisci l\'e-mail del cliente.';
+  if (!data.numCedolino) return 'Inserisci il numero cedolino.';
+  if (!data.dataIntervento) return 'Inserisci la data dell\'intervento.';
+  if (data.veicoli.length === 0) return 'Aggiungi almeno un veicolo.';
+  return null;
+}
+
+// ─── SEND CEDOLINO ────────────────────────────────────────
+async function sendCedolino() {
+  const data = collectData();
+  const err = validate(data);
+  if (err) { toast(err, 'error'); return; }
+  if (!config.gasUrl) { toast('Configura prima lo script Google Apps Script nelle impostazioni.', 'error'); openSetup(); return; }
+
+  toast('Invio in corso…', 'info');
+  try {
+    const resp = await fetch(config.gasUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: 'submitCedolino', ...data })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      toast('Cedolino inviato con successo a ' + data.email + '!', 'success');
+    } else {
+      toast('Errore: ' + (result.message || 'risposta non valida'), 'error');
+    }
+  } catch(e) {
+    toast('Errore di connessione. Verifica l\'URL dello script.', 'error');
+  }
+}
+
+// ─── EXPORT EXCEL ─────────────────────────────────────────
+function exportExcel() {
+  const data = collectData();
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Dati Cliente
+  const clienteData = [
+    ['ITALBATTERIE — CEDOLINO INTERVENTO'],
+    [],
+    ['N° Cedolino', data.numCedolino],
+    ['Data', data.dataIntervento],
+    ['Tecnico', data.tecnico],
+    [],
+    ['DATI CLIENTE'],
+    ['Nome', data.nome],
+    ['Cognome', data.cognome],
+    ['Azienda', data.azienda],
+    ['Indirizzo', data.indirizzo],
+    ['Telefono', data.telefono],
+    ['E-mail', data.email],
+    [],
+    ['NOTE', data.noteGenerali]
+  ];
+  const wsCliente = XLSX.utils.aoa_to_sheet(clienteData);
+  wsCliente['!cols'] = [{wch:20},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, wsCliente, 'Dati Cliente');
+
+  // Sheet 2: Veicoli
+  const vHeader = [['Mezzo','Targa','Età Batteria','Nota di Intervento','Esito Intervento']];
+  const vRows = data.veicoli.map(v => [v.mezzo, v.targa, v.eta, v.nota, v.esito]);
+  const wsVeicoli = XLSX.utils.aoa_to_sheet([...vHeader, ...vRows]);
+  wsVeicoli['!cols'] = [{wch:16},{wch:12},{wch:14},{wch:40},{wch:25}];
+  XLSX.utils.book_append_sheet(wb, wsVeicoli, 'Veicoli');
+
+  const filename = `Italbatterie_${data.azienda.replace(/\s/g,'_')}_${data.dataIntervento || 'cedolino'}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  toast('File Excel scaricato: ' + filename, 'success');
+}
+
+// ─── RESET ────────────────────────────────────────────────
+function resetForm() {
+  if (!confirm('Vuoi davvero azzerare il modulo? I dati non salvati verranno persi.')) return;
+  ['numCedolino','dataIntervento','tecnico','nome','cognome','azienda','indirizzo','telefono','email','noteGenerali'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('vehicleBody').innerHTML = '';
+  rowCount = 0;
+  clearSignature();
+  updateProgress();
+  toast('Modulo azzerato', 'info');
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icon = {success:'✓', error:'✕', info:'ℹ'};
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon[type] || '●';
+  t.className = type;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadConfig();
+  addVehicleRow();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dataIntervento').value = today;
+  // Auto-generate cedolino number
+  const counter = (parseInt(localStorage.getItem('ib_counter') || '0') + 1);
+  localStorage.setItem('ib_counter', counter);
+  const year = new Date().getFullYear();
+  document.getElementById('numCedolino').value = `IB-${year}-${String(counter).padStart(3,'0')}`;
+  updateProgress();
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+  README_SETUP — GOOGLE APPS SCRIPT DA INCOLLARE NEL TUO SHEET
+  ═══════════════════════════════════════════════════════════
+  1. Apri il tuo Google Sheet su drive.google.com
+  2. Vai su Estensioni → Apps Script
+  3. Incolla il codice qui sotto (sostituisci tutto)
+  4. Salva, poi Distribuisci → Nuova distribuzione → Web App
+     - Esegui come: me stesso
+     - Accesso: chiunque
+  5. Autorizza e copia l'URL generato nelle impostazioni del modulo
+
+─────────────────────────────────────────────────────────────
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    if (data.action !== 'submitCedolino') return resp({success:false,message:'Azione non valida'});
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // ── Foglio riepilogo clienti ──
+    var shClients = ss.getSheetByName('Clienti') || ss.insertSheet('Clienti');
+    if (shClients.getLastRow() === 0) {
+      shClients.appendRow(['Timestamp','N° Cedolino','Data','Tecnico','Nome','Cognome','Azienda','Indirizzo','Telefono','Email','Note']);
+    }
+    shClients.appendRow([data.timestamp, data.numCedolino, data.dataIntervento, data.tecnico,
+      data.nome, data.cognome, data.azienda, data.indirizzo, data.telefono, data.email, data.noteGenerali]);
+
+    // ── Foglio veicoli ──
+    var shVeicoli = ss.getSheetByName('Veicoli') || ss.insertSheet('Veicoli');
+    if (shVeicoli.getLastRow() === 0) {
+      shVeicoli.appendRow(['N° Cedolino','Azienda','Data','Mezzo','Targa','Età Batteria','Nota Intervento','Esito']);
+    }
+    (data.veicoli || []).forEach(function(v) {
+      shVeicoli.appendRow([data.numCedolino, data.azienda, data.dataIntervento,
+        v.mezzo, v.targa, v.eta, v.nota, v.esito]);
+    });
+
+    // ── Invio email al cliente ──
+    var subject = 'Cedolino Intervento Italbatterie — ' + data.numCedolino;
+    var body = 'Gentile ' + data.nome + ' ' + data.cognome + ',\n\n';
+    body += 'In allegato trovate il cedolino di intervento n° ' + data.numCedolino + ' del ' + data.dataIntervento + '.\n\n';
+    body += 'VEICOLI TRATTATI:\n';
+    (data.veicoli || []).forEach(function(v, i) {
+      body += (i+1) + '. ' + v.mezzo + ' (' + v.targa + ') — ' + v.esito + '\n';
+      if (v.nota) body += '   Nota: ' + v.nota + '\n';
+    });
+    if (data.noteGenerali) body += '\nNOTE: ' + data.noteGenerali + '\n';
+    body += '\nCordiali saluti,\nItalbatterie\n';
+    MailApp.sendEmail({ to: data.email, subject: subject, body: body });
+
+    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({success:false,message:err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+─────────────────────────────────────────────────────────────
+-->
+
+</body>
+</html>

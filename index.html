@@ -903,6 +903,11 @@ function resetForm() {
   clearSig();
   document.getElementById('tsigInput').value = '';
   document.getElementById('tsigPreview').textContent = '';
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  generaNumeroCedolino();
+  addRow(); upd();
+  toast('Nuovo cedolino pronto', 'info');
+}
   // Auto new number
   const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
   localStorage.setItem('ib_ctr', cnt);
@@ -928,18 +933,46 @@ function toast(msg, type='info') {
 /* ─── INIT ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   try { cfg = JSON.parse(localStorage.getItem('ib_cfg')||'{}'); } catch(e){}
-  // Logo is embedded directly
   if (cfg.logoUrl) applyLogo(cfg.logoUrl);
-  const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
-  localStorage.setItem('ib_ctr', cnt);
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  addRow();
+  generaNumeroCedolino();
+  upd();
+});
+
+/* ─── NUMERO CEDOLINO DA GOOGLE SHEETS ───────────────────── */
+function generaNumeroCedolino() {
   const now = new Date();
   const yy  = now.getFullYear();
   const mm  = String(now.getMonth()+1).padStart(2,'0');
   const dd  = String(now.getDate()).padStart(2,'0');
-  document.getElementById('numCed').value = `IB-${yy}-${mm}-${dd}-${String(cnt).padStart(3,'0')}`;
-  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
-  addRow(); upd();
-});
+
+  const field = document.getElementById('numCed');
+  field.value = 'Caricamento…';
+  field.disabled = true;
+
+  if (!cfg.gasUrl) {
+    // Nessuno script configurato: usa numero locale provvisorio
+    field.value = `IB-${yy}-${mm}-${dd}-001`;
+    field.disabled = false;
+    return;
+  }
+
+  fetch(cfg.gasUrl + '?action=getLastNumber', { method: 'GET', mode: 'cors' })
+    .then(r => r.json())
+    .then(res => {
+      const nextNum = String((res.lastNumber || 0) + 1).padStart(3, '0');
+      field.value = `IB-${yy}-${mm}-${dd}-${nextNum}`;
+      field.disabled = false;
+    })
+    .catch(() => {
+      // Fallback: usa numero locale se la rete non risponde
+      const local = parseInt(localStorage.getItem('ib_ctr') || '0') + 1;
+      field.value = `IB-${yy}-${mm}-${dd}-${String(local).padStart(3,'0')}`;
+      field.disabled = false;
+      console.warn('Numero cedolino: fallback locale (Google Sheets non raggiungibile)');
+    });
+}
 </script>
 
 <!--
@@ -949,9 +982,36 @@ document.addEventListener('DOMContentLoaded', () => {
 ════════════════════════════════════════════════════════════════════════════
 
 function doGet(e) {
-  return ContentService
-    .createTextOutput('✅ Italbatterie — Script attivo e funzionante.')
-    .setMimeType(ContentService.MimeType.TEXT);
+  // Ping di verifica
+  if (!e.parameter || !e.parameter.action) {
+    return ContentService
+      .createTextOutput('✅ Italbatterie — Script attivo e funzionante.')
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // Restituisce l'ultimo numero progressivo dal foglio Clienti
+  if (e.parameter.action === 'getLastNumber') {
+    try {
+      var ss  = SpreadsheetApp.getActiveSpreadsheet();
+      var shC = ss.getSheetByName('Clienti');
+      var lastNumber = 0;
+      if (shC && shC.getLastRow() > 1) {
+        // Colonna B = N° Cedolino (es. IB-2025-03-25-007)
+        var lastRow   = shC.getLastRow();
+        var lastCode  = shC.getRange(lastRow, 2).getValue().toString();
+        var parts     = lastCode.split('-');
+        var num       = parseInt(parts[parts.length - 1]);
+        if (!isNaN(num)) lastNumber = num;
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({success: true, lastNumber: lastNumber}))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch(err) {
+      return ContentService
+        .createTextOutput(JSON.stringify({success: false, lastNumber: 0}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
 }
 
 function doPost(e) {

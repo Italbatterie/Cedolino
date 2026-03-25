@@ -405,7 +405,7 @@
 
   <!-- META BAR -->
   <div class="metabar">
-    <div class="f"><label>N° Cedolino <span class="req">*</span></label><input type="text" id="numCed" placeholder="IB-2025-001" oninput="upd()"/></div>
+    <div class="f"><label>N° Cedolino <span class="req">*</span></label><input type="text" id="numCed" placeholder="IB-2025-03-25-001" oninput="upd()"/></div>
     <div class="f"><label>Data Intervento <span class="req">*</span></label><input type="date" id="dataInt" oninput="upd()"/></div>
     <div class="f"><label>Tecnico Responsabile</label><input type="text" id="tecnico" placeholder="Nome tecnico"/></div>
   </div>
@@ -906,8 +906,11 @@ function resetForm() {
   // Auto new number
   const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
   localStorage.setItem('ib_ctr', cnt);
-  const y = new Date().getFullYear();
-  document.getElementById('numCed').value = `IB-${y}-${String(cnt).padStart(3,'0')}`;
+  const now = new Date();
+  const yy  = now.getFullYear();
+  const mm  = String(now.getMonth()+1).padStart(2,'0');
+  const dd  = String(now.getDate()).padStart(2,'0');
+  document.getElementById('numCed').value = `IB-${yy}-${mm}-${dd}-${String(cnt).padStart(3,'0')}`;
   document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
   addRow(); upd();
   toast('Nuovo cedolino pronto', 'info');
@@ -929,8 +932,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cfg.logoUrl) applyLogo(cfg.logoUrl);
   const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
   localStorage.setItem('ib_ctr', cnt);
-  const y = new Date().getFullYear();
-  document.getElementById('numCed').value = `IB-${y}-${String(cnt).padStart(3,'0')}`;
+  const now = new Date();
+  const yy  = now.getFullYear();
+  const mm  = String(now.getMonth()+1).padStart(2,'0');
+  const dd  = String(now.getDate()).padStart(2,'0');
+  document.getElementById('numCed').value = `IB-${yy}-${mm}-${dd}-${String(cnt).padStart(3,'0')}`;
   document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
   addRow(); upd();
 });

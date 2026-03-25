@@ -1078,81 +1078,123 @@ function doPost(e) {
 function creaPDF(data) {
   var veicoli = data.veicoli || [];
 
-  // Costruisci tabella veicoli
-  var righe = '';
-  veicoli.forEach(function(v, i) {
-    righe +=
-      '\n' + (i+1) + '. MEZZO: ' + (v.mezzo||'—') +
-      '  |  TARGA: ' + (v.targa||'—') +
-      '  |  ETÀ BATTERIA: ' + (v.eta||'—') +
-      '\n   NOTA: ' + (v.nota||'—') +
-      '\n   ESITO: ' + (v.esito||'—') + '\n';
-  });
-
-  // Crea un Google Doc temporaneo
-  var doc  = DocumentApp.create('_cedolino_tmp_' + data.numCedolino);
+  // Crea un Google Doc temporaneo e lo converte in PDF
+  // Non richiede Drive API aggiuntiva — usa solo DocumentApp nativo
+  var doc  = DocumentApp.create('_cedolino_tmp_' + Date.now());
   var body = doc.getBody();
 
-  // Stile intestazione
-  body.appendParagraph('ITALBATTERIE')
-    .setHeading(DocumentApp.ParagraphHeading.HEADING1)
-    .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  // Stile base
+  var styleTitle = {};
+  styleTitle[DocumentApp.Attribute.FONT_SIZE]   = 18;
+  styleTitle[DocumentApp.Attribute.BOLD]        = true;
+  styleTitle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#00475d';
+
+  var styleLabel = {};
+  styleLabel[DocumentApp.Attribute.FONT_SIZE] = 9;
+  styleLabel[DocumentApp.Attribute.BOLD]      = true;
+  styleLabel[DocumentApp.Attribute.FOREGROUND_COLOR] = '#7a9aaa';
+
+  var styleNormal = {};
+  styleNormal[DocumentApp.Attribute.FONT_SIZE] = 11;
+  styleNormal[DocumentApp.Attribute.BOLD]      = false;
+
+  var styleBold = {};
+  styleBold[DocumentApp.Attribute.FONT_SIZE] = 11;
+  styleBold[DocumentApp.Attribute.BOLD]      = true;
+
+  // ── INTESTAZIONE ──────────────────────────────────────────
+  body.appendParagraph('ITALBATTERIE').setAttributes(styleTitle)
+    .setAlignment(DocumentApp.HorizontalAlignment.LEFT);
 
   body.appendParagraph('La tua strada, la nostra energia')
-    .setAlignment(DocumentApp.HorizontalAlignment.CENTER)
-    .setItalic(true);
+    .setFontSize(9).setItalic(true)
+    .setForegroundColor('#7a9aaa')
+    .setAlignment(DocumentApp.HorizontalAlignment.LEFT);
 
   body.appendHorizontalRule();
 
-  body.appendParagraph('CEDOLINO DI INTERVENTO N° ' + (data.numCedolino||''))
-    .setHeading(DocumentApp.ParagraphHeading.HEADING2)
-    .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  // Numero cedolino e data
+  var hdr = body.appendParagraph('Cedolino n° ' + (data.numCedolino||'') + '   —   Data: ' + (data.dataIntervento||''));
+  hdr.setFontSize(13).setBold(true).setForegroundColor('#00475d');
 
-  body.appendParagraph('Data intervento: ' + (data.dataIntervento||'') +
-    '   |   Tecnico: ' + (data.tecnico||'—'))
-    .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-
-  body.appendHorizontalRule();
-
-  // Dati cliente
-  body.appendParagraph('DATI CLIENTE').setBold(true);
-  body.appendParagraph(
-    (data.nome||'') + ' ' + (data.cognome||'') + '\n' +
-    (data.azienda||'') + '\n' +
-    (data.indirizzo||'') + '\n' +
-    'Tel: ' + (data.telefono||'—') + '   Email: ' + (data.email||'')
-  );
+  if (data.tecnico) {
+    body.appendParagraph('Tecnico: ' + data.tecnico).setFontSize(10).setForegroundColor('#3a5a6a');
+  }
 
   body.appendHorizontalRule();
 
-  // Veicoli
-  body.appendParagraph('VEICOLI TRATTATI').setBold(true);
-  body.appendParagraph(righe || 'Nessun veicolo inserito');
+  // ── DATI CLIENTE ──────────────────────────────────────────
+  body.appendParagraph('DATI CLIENTE').setAttributes(styleLabel);
 
+  body.appendParagraph((data.nome||'') + ' ' + (data.cognome||'')).setFontSize(13).setBold(true);
+
+  if (data.azienda)   body.appendParagraph(data.azienda).setFontSize(11).setBold(true).setForegroundColor('#3a5a6a');
+  if (data.indirizzo) body.appendParagraph(data.indirizzo).setFontSize(10).setForegroundColor('#7a9aaa');
+  if (data.telefono)  body.appendParagraph('Tel: ' + data.telefono).setFontSize(10).setForegroundColor('#7a9aaa');
+  if (data.email)     body.appendParagraph('Email: ' + data.email).setFontSize(10).setForegroundColor('#7a9aaa');
+
+  body.appendHorizontalRule();
+
+  // ── VEICOLI ───────────────────────────────────────────────
+  body.appendParagraph('VEICOLI TRATTATI').setAttributes(styleLabel);
+
+  // Tabella veicoli
+  if (veicoli.length > 0) {
+    var table = body.appendTable();
+
+    // Header tabella
+    var headerRow = table.appendTableRow();
+    var headers   = ['Mezzo', 'Targa', 'Età Batteria', 'Nota Intervento', 'Esito'];
+    headers.forEach(function(h) {
+      var cell = headerRow.appendTableCell(h);
+      cell.setBackgroundColor('#00475d');
+      cell.editAsText().setForegroundColor('#ffffff').setBold(true).setFontSize(9);
+    });
+
+    // Righe veicoli
+    veicoli.forEach(function(v, i) {
+      var row  = table.appendTableRow();
+      var vals = [v.mezzo||'—', v.targa||'—', v.eta||'—', v.nota||'—', v.esito||'—'];
+      vals.forEach(function(val, ci) {
+        var cell = row.appendTableCell(val);
+        cell.setBackgroundColor(i % 2 === 0 ? '#f0f7fa' : '#ffffff');
+        var txt = cell.editAsText().setFontSize(10);
+        if (ci === 1) txt.setBold(true);  // Targa in grassetto
+        if (ci === 4) txt.setForegroundColor('#1a7a4a').setBold(true); // Esito in verde
+      });
+    });
+  }
+
+  // ── NOTE ──────────────────────────────────────────────────
   if (data.note) {
     body.appendHorizontalRule();
-    body.appendParagraph('NOTE AGGIUNTIVE').setBold(true);
-    body.appendParagraph(data.note);
+    body.appendParagraph('NOTE AGGIUNTIVE').setAttributes(styleLabel);
+    body.appendParagraph(data.note).setFontSize(11);
   }
 
-  // Firma
+  // ── FIRMA ─────────────────────────────────────────────────
   body.appendHorizontalRule();
-  body.appendParagraph('FIRMA CLIENTE').setBold(true);
-  if (data.firma && data.firma.indexOf('TEXT:') === 0) {
-    body.appendParagraph(data.firma.replace('TEXT:', '')).setItalic(true).setFontSize(18);
-  } else {
-    body.appendParagraph('_________________________');
-  }
+  body.appendParagraph('FIRMA CLIENTE').setAttributes(styleLabel);
 
+  var firmaText = '';
+  if (data.firma && data.firma.indexOf('TEXT:') === 0) {
+    firmaText = data.firma.replace('TEXT:','');
+  } else if (data.firma && data.firma.indexOf('data:image') === 0) {
+    firmaText = '[Firma grafica allegata]';
+  } else {
+    firmaText = 'Firma non acquisita';
+  }
+  body.appendParagraph(firmaText).setFontSize(16).setItalic(true).setForegroundColor('#002f3d');
+
+  // ── FOOTER ────────────────────────────────────────────────
   body.appendHorizontalRule();
   body.appendParagraph('Italbatterie · La tua strada, la nostra energia')
-    .setAlignment(DocumentApp.HorizontalAlignment.CENTER)
-    .setItalic(true)
-    .setFontSize(9);
+    .setFontSize(9).setItalic(true).setForegroundColor('#7a9aaa')
+    .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
 
   doc.saveAndClose();
 
-  // Converti in PDF e rimuovi il doc temporaneo
+  // Converti in PDF usando getAs — non richiede Drive API separata
   var docFile = DriveApp.getFileById(doc.getId());
   var pdfBlob = docFile.getAs('application/pdf');
   docFile.setTrashed(true);

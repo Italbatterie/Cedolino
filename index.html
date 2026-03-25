@@ -938,9 +938,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!--
 ════════════════════════════════════════════════════════════════════════════
-  README_SETUP — CODICE GOOGLE APPS SCRIPT
-  Incolla tutto quanto segue nell'editor Apps Script del tuo Google Sheet.
+  README_SETUP — CODICE GOOGLE APPS SCRIPT COMPLETO
+  Incolla tutto nell'editor Apps Script, salva e ridistribuisci.
 ════════════════════════════════════════════════════════════════════════════
+
+function doGet(e) {
+  return ContentService
+    .createTextOutput('✅ Italbatterie — Script attivo e funzionante.')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
 
 function doPost(e) {
   try {
@@ -951,18 +957,18 @@ function doPost(e) {
       raw = e.parameter.data;
     }
     var data = JSON.parse(raw);
+
     if (data.action !== 'submitCedolino' && data.action !== 'saveToDatabase')
-      return out({success:false, message:'Azione sconosciuta'});
+      return out({success: false, message: 'Azione sconosciuta'});
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     // ── Foglio CLIENTI ──────────────────────────────────────────────────
     var shC = ss.getSheetByName('Clienti') || ss.insertSheet('Clienti');
     if (shC.getLastRow() === 0) {
-      shC.appendRow(['Timestamp','N° Cedolino','Data','Tecnico',
+      shC.appendRow(['Timestamp','N° Cedolino','Data Intervento','Tecnico',
                      'Nome','Cognome','Azienda','Indirizzo','Telefono','Email','Note']);
-      shC.getRange(1,1,1,11).setFontWeight('bold')
-         .setBackground('#00475d').setFontColor('#ffffff');
+      shC.getRange(1,1,1,11).setFontWeight('bold').setBackground('#00475d').setFontColor('#ffffff');
     }
     shC.appendRow([data.timestamp, data.numCedolino, data.dataIntervento, data.tecnico,
                    data.nome, data.cognome, data.azienda, data.indirizzo,
@@ -973,37 +979,162 @@ function doPost(e) {
     if (shV.getLastRow() === 0) {
       shV.appendRow(['N° Cedolino','Azienda','Data Intervento',
                      'Mezzo','Targa','Età Batteria','Nota Intervento','Esito']);
-      shV.getRange(1,1,1,8).setFontWeight('bold')
-         .setBackground('#00475d').setFontColor('#ffffff');
+      shV.getRange(1,1,1,8).setFontWeight('bold').setBackground('#00475d').setFontColor('#ffffff');
     }
     (data.veicoli || []).forEach(function(v) {
       shV.appendRow([data.numCedolino, data.azienda, data.dataIntervento,
                      v.mezzo, v.targa, v.eta, v.nota, v.esito]);
     });
 
-    // ── Solo "submitCedolino" invia anche l'email ───────────────────────
+    // ── Invio EMAIL con PDF allegato (solo "submitCedolino") ────────────
     if (data.action === 'submitCedolino') {
-    var body = 'Gentile ' + data.nome + ' ' + data.cognome + ',\n\n'
-             + 'Le trasmettiamo il cedolino di intervento n° ' + data.numCedolino
-             + ' del ' + data.dataIntervento + '.\n\n'
-             + 'VEICOLI TRATTATI:\n';
-    (data.veicoli || []).forEach(function(v, i) {
-      body += (i+1) + '. ' + v.mezzo + ' — Targa: ' + v.targa + '\n';
-      body += '   Età batteria: ' + v.eta + '\n';
-      body += '   Esito: ' + v.esito + '\n';
-      if (v.nota) body += '   Nota: ' + v.nota + '\n';
-      body += '\n';
-    });
-    if (data.note) body += 'NOTE GENERALI:\n' + data.note + '\n\n';
-    body += 'Cordiali saluti,\nItalbatterie\n';
+      var subject = 'Cedolino Intervento Italbatterie n° ' + data.numCedolino;
 
-    MailApp.sendEmail({ to: data.email, subject: sub, body: body });
-    } // fine if submitCedolino
+      var emailBody =
+        '<div style="font-family:Arial,sans-serif;font-size:14px;color:#1a2e38;max-width:600px;margin:0 auto">' +
+        '<div style="background:#00475d;padding:24px 32px;border-radius:8px 8px 0 0">' +
+          '<p style="font-size:20px;font-weight:900;letter-spacing:3px;color:#fff;margin:0;text-transform:uppercase">ITALBATTERIE</p>' +
+          '<p style="font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:2px;margin:4px 0 0;text-transform:uppercase">La tua strada, la nostra energia</p>' +
+        '</div>' +
+        '<div style="padding:28px 32px;background:#f6f9fb;border:1px solid #d0e4eb;border-top:none;border-radius:0 0 8px 8px">' +
+          '<p style="font-size:15px;margin:0 0 16px">Gentile cliente,</p>' +
+          '<p style="margin:0 0 16px">alleghiamo l'esito dell'intervento n° <strong style="color:#00475d">' + data.numCedolino + '</strong>' +
+          ' effettuato in data <strong style="color:#00475d">' + data.dataIntervento + '</strong>.</p>' +
+          '<p style="margin:0 0 24px">In allegato trova il cedolino completo in formato PDF.</p>' +
+          '<p style="margin:0">Cordiali saluti,<br/><strong style="color:#00475d">Italbatterie</strong><br/>' +
+          '<em style="color:#7a9aaa;font-size:12px">La tua strada, la nostra energia</em></p>' +
+        '</div></div>';
 
-    return out({success:true});
+      var pdf     = creaPDF(data);
+      var nomePDF = 'Cedolino_' + data.numCedolino + '_' + data.azienda.replace(/\s+/g,'_') + '.pdf';
+
+      MailApp.sendEmail({
+        to:          data.email,
+        subject:     subject,
+        htmlBody:    emailBody,
+        attachments: [pdf.getAs(MimeType.PDF).setName(nomePDF)]
+      });
+    }
+
+    return out({success: true});
+
   } catch(err) {
-    return out({success:false, message:err.toString()});
+    return out({success: false, message: err.toString()});
   }
+}
+
+// ── Genera PDF impaginato del cedolino ──────────────────────────────────
+function creaPDF(data) {
+  var veicoli = data.veicoli || [];
+
+  var righeVeicoli = '';
+  veicoli.forEach(function(v, i) {
+    var bg = i % 2 === 0 ? '#f0f7fa' : '#ffffff';
+    righeVeicoli +=
+      '<tr style="background:' + bg + '">' +
+        '<td style="padding:9px 12px;border-bottom:1px solid #d0e4eb">'                              + (v.mezzo||'—')  + '</td>' +
+        '<td style="padding:9px 12px;border-bottom:1px solid #d0e4eb;font-weight:600">'              + (v.targa||'—')  + '</td>' +
+        '<td style="padding:9px 12px;border-bottom:1px solid #d0e4eb">'                              + (v.eta  ||'—')  + '</td>' +
+        '<td style="padding:9px 12px;border-bottom:1px solid #d0e4eb">'                              + (v.nota ||'—')  + '</td>' +
+        '<td style="padding:9px 12px;border-bottom:1px solid #d0e4eb;color:#1a7a4a;font-weight:600">'+ (v.esito||'—')  + '</td>' +
+      '</tr>';
+  });
+
+  var noteSezione = data.note
+    ? '<div style="margin-top:24px;background:#f0f7fa;border-left:4px solid #00475d;border-radius:0 8px 8px 0;padding:14px 18px">' +
+        '<p style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7a9aaa;margin:0 0 6px">Note aggiuntive</p>' +
+        '<p style="font-size:13px;color:#1a2e38;margin:0">' + data.note + '</p></div>'
+    : '';
+
+  var firmaSezione = '';
+  if (data.firma && data.firma.indexOf('TEXT:') === 0) {
+    firmaSezione = '<span style="font-family:Georgia,serif;font-style:italic;font-size:26px;color:#002f3d;border-bottom:2px solid #00475d;padding-bottom:4px">' +
+      data.firma.replace('TEXT:','') + '</span>';
+  } else if (data.firma && data.firma.indexOf('data:image') === 0) {
+    firmaSezione = '<img src="' + data.firma + '" style="max-height:70px;max-width:260px;border-bottom:2px solid #00475d"/>';
+  } else {
+    firmaSezione = '<span style="color:#aaa;font-style:italic;font-size:12px">Firma non acquisita</span>';
+  }
+
+  var htmlContent =
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="font-family:Arial,sans-serif;font-size:13px;color:#1a2e38;margin:0;padding:0">' +
+
+    // Header blu
+    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#00475d">' +
+      '<tr>' +
+        '<td style="padding:22px 32px">' +
+          '<p style="font-size:22px;font-weight:900;letter-spacing:4px;color:#fff;margin:0;text-transform:uppercase">ITALBATTERIE</p>' +
+          '<p style="font-size:9px;color:rgba(255,255,255,0.55);letter-spacing:3px;margin:4px 0 0;text-transform:uppercase">La tua strada, la nostra energia</p>' +
+        '</td>' +
+        '<td style="padding:22px 32px;text-align:right">' +
+          '<p style="font-size:10px;color:rgba(255,255,255,0.55);margin:0;text-transform:uppercase;letter-spacing:1px">Cedolino di Intervento</p>' +
+          '<p style="font-size:24px;font-weight:900;color:#fff;margin:4px 0 0">' + (data.numCedolino||'') + '</p>' +
+          '<p style="font-size:12px;color:rgba(255,255,255,0.7);margin:4px 0 0">Data: ' + (data.dataIntervento||'') + '</p>' +
+        '</td>' +
+      '</tr>' +
+    '</table>' +
+
+    // Corpo
+    '<div style="padding:26px 32px">' +
+
+      // Dati cliente + intervento affiancati
+      '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px">' +
+        '<tr>' +
+          '<td width="50%" style="vertical-align:top;padding-right:20px">' +
+            '<p style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7a9aaa;margin:0 0 10px">Dati Cliente</p>' +
+            '<p style="margin:0 0 3px;font-size:15px;font-weight:700">' + (data.nome||'') + ' ' + (data.cognome||'') + '</p>' +
+            '<p style="margin:0 0 3px;color:#3a5a6a;font-weight:600">' + (data.azienda||'') + '</p>' +
+            '<p style="margin:0 0 2px;color:#7a9aaa;font-size:12px">' + (data.indirizzo||'') + '</p>' +
+            '<p style="margin:0 0 2px;color:#7a9aaa;font-size:12px">' + (data.telefono||'') + '</p>' +
+            '<p style="margin:0;color:#7a9aaa;font-size:12px">' + (data.email||'') + '</p>' +
+          '</td>' +
+          '<td width="50%" style="vertical-align:top;padding-left:20px;border-left:2px solid #e8f4f8">' +
+            '<p style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7a9aaa;margin:0 0 10px">Dettaglio Intervento</p>' +
+            '<table cellpadding="0" cellspacing="0">' +
+              '<tr><td style="font-size:11px;color:#7a9aaa;padding-bottom:6px;width:120px">N° Cedolino</td><td style="font-weight:700">' + (data.numCedolino||'') + '</td></tr>' +
+              '<tr><td style="font-size:11px;color:#7a9aaa;padding-bottom:6px">Data Intervento</td><td style="font-weight:600">' + (data.dataIntervento||'') + '</td></tr>' +
+              '<tr><td style="font-size:11px;color:#7a9aaa">Tecnico</td><td style="font-weight:600">' + (data.tecnico||'—') + '</td></tr>' +
+            '</table>' +
+          '</td>' +
+        '</tr>' +
+      '</table>' +
+
+      // Tabella veicoli
+      '<p style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7a9aaa;margin:0 0 10px">Veicoli Trattati</p>' +
+      '<table width="100%" style="border:1px solid #d0e4eb;border-radius:6px;overflow:hidden" cellpadding="0" cellspacing="0">' +
+        '<thead>' +
+          '<tr style="background:#00475d">' +
+            '<th style="padding:10px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8)">Mezzo</th>' +
+            '<th style="padding:10px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8)">Targa</th>' +
+            '<th style="padding:10px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8)">Età Batteria</th>' +
+            '<th style="padding:10px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8)">Nota Intervento</th>' +
+            '<th style="padding:10px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8)">Esito</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' + righeVeicoli + '</tbody>' +
+      '</table>' +
+
+      noteSezione +
+
+      // Firma
+      '<div style="margin-top:32px;padding-top:18px;border-top:1px solid #e8f4f8">' +
+        '<p style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7a9aaa;margin:0 0 12px">Firma Cliente</p>' +
+        firmaSezione +
+      '</div>' +
+
+    '</div>' +
+
+    // Footer
+    '<div style="background:#00475d;padding:12px 32px;margin-top:16px">' +
+      '<p style="font-size:10px;color:rgba(255,255,255,0.5);margin:0;text-align:center;letter-spacing:1px">Italbatterie · La tua strada, la nostra energia</p>' +
+    '</div>' +
+
+    '</body></html>';
+
+  var tmpFile = DriveApp.createFile('_cedolino_tmp.html', htmlContent, MimeType.HTML);
+  var pdfBlob = tmpFile.getAs(MimeType.PDF);
+  tmpFile.setTrashed(true);
+  return pdfBlob;
 }
 
 function out(obj) {

@@ -1,491 +1,338 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Italbatterie — Cedolino Intervento</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --red: #D72B2B;
-      --red-dark: #A81C1C;
-      --red-light: #FF4444;
-      --black: #0D0D0D;
-      --dark: #1A1A1A;
-      --panel: #222222;
-      --panel2: #2C2C2C;
-      --border: #3A3A3A;
-      --text: #E8E8E8;
-      --text-muted: #888888;
-      --white: #FFFFFF;
-      --input-bg: #181818;
-      --input-border: #3D3D3D;
-      --input-focus: #D72B2B;
-      --success: #2ECC71;
-      --warning: #F39C12;
+      --blue:       #00475d;
+      --blue-dark:  #002f3d;
+      --blue-mid:   #005f7a;
+      --blue-light: #0080a0;
+      --blue-pale:  #e8f4f8;
+      --blue-ultra: #f0f8fb;
+      --white:      #ffffff;
+      --offwhite:   #f6f9fb;
+      --border:     #cfe2ea;
+      --border2:    #a8c8d4;
+      --text:       #1a2e38;
+      --text-mid:   #3a5a6a;
+      --text-muted: #7a9aaa;
+      --input-bg:   #ffffff;
+      --success:    #1a7a4a;
+      --error:      #c0392b;
+      --error-bg:   #fdf0ee;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      background: var(--black);
+      background: var(--offwhite);
       color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      font-weight: 400;
+      font-family: 'Montserrat', sans-serif;
       min-height: 100vh;
       background-image:
-        radial-gradient(ellipse at 0% 0%, rgba(215,43,43,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse at 100% 100%, rgba(215,43,43,0.04) 0%, transparent 50%);
+        radial-gradient(ellipse at 90% 0%, rgba(0,71,93,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 0% 100%, rgba(0,71,93,0.04) 0%, transparent 45%);
     }
 
-    /* ── HEADER ── */
+    /* ── HEADER ─────────────────────────────────── */
     .header {
-      background: var(--dark);
-      border-bottom: 3px solid var(--red);
-      padding: 0 40px;
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      height: 80px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 30px rgba(215,43,43,0.15);
+      background: var(--blue);
+      height: 74px; padding: 0 48px;
+      display: flex; align-items: center; gap: 18px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,47,61,0.28);
     }
-    .header-logo {
-      width: 52px; height: 52px;
-      background: var(--red);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: 22px;
-      color: white;
-      letter-spacing: -1px;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .header-logo img { width: 100%; height: 100%; object-fit: contain; display: none; }
-    .header-logo img.loaded { display: block; }
-    .header-logo span { display: block; }
-    .header-info h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: 26px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--white);
-      line-height: 1;
-    }
-    .header-info p {
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-top: 3px;
-    }
-    .header-badge {
-      margin-left: auto;
-      background: rgba(215,43,43,0.15);
-      border: 1px solid rgba(215,43,43,0.3);
-      border-radius: 4px;
-      padding: 6px 14px;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--red-light);
-      font-weight: 600;
-    }
-
-    /* ── MAIN ── */
-    .main { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
-
-    /* ── SECTION TITLES ── */
-    .section-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--red);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, var(--border), transparent);
-    }
-    .section-num {
-      width: 26px; height: 26px;
-      background: var(--red);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    /* ── CARD ── */
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 32px;
-      margin-bottom: 28px;
-      transition: border-color 0.2s;
-    }
-    .card:hover { border-color: #555; }
-
-    /* ── GRID ── */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-    @media (max-width: 640px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    }
-
-    /* ── FIELDS ── */
-    .field { display: flex; flex-direction: column; gap: 7px; }
-    .field label {
-      font-size: 10px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-    .field label .req { color: var(--red); margin-left: 2px; }
-    .field input, .field select, .field textarea {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      font-size: 14px;
-      padding: 11px 14px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      width: 100%;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus {
-      border-color: var(--input-focus);
-      box-shadow: 0 0 0 3px rgba(215,43,43,0.12);
-    }
-    .field textarea { resize: vertical; min-height: 72px; }
-    .field select option { background: var(--panel); }
-
-    /* ── VEHICLE TABLE ── */
-    .vehicle-section { margin-bottom: 28px; }
-    .vehicle-table-wrap { overflow-x: auto; }
-    .vehicle-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .vehicle-table th {
-      background: var(--panel2);
-      color: var(--text-muted);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 12px 10px;
-      text-align: left;
-      border-bottom: 2px solid var(--red);
-      white-space: nowrap;
-    }
-    .vehicle-table td {
-      padding: 6px 4px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-    .vehicle-table tr:last-child td { border-bottom: none; }
-    .vehicle-table td input, .vehicle-table td select, .vehicle-table td textarea {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 5px;
-      color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      font-size: 13px;
-      padding: 8px 10px;
-      outline: none;
-      width: 100%;
-      transition: border-color 0.2s;
-      min-width: 80px;
-    }
-    .vehicle-table td input:focus, .vehicle-table td select:focus, .vehicle-table td textarea:focus {
-      border-color: var(--input-focus);
-    }
-    .vehicle-table td textarea { min-height: 52px; resize: vertical; }
-    .vehicle-table td select option { background: var(--panel); }
-    .th-mezzo { min-width: 120px; }
-    .th-targa { min-width: 90px; }
-    .th-eta { min-width: 90px; }
-    .th-nota { min-width: 150px; }
-    .th-esito { min-width: 140px; }
-    .th-del { width: 44px; }
-
-    .row-del-btn {
+    .hlogo {
+      width: 52px; height: 52px; border-radius: 8px;
       background: transparent;
-      border: 1px solid #555;
-      border-radius: 5px;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 7px 10px;
-      font-size: 16px;
-      transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .row-del-btn:hover { background: rgba(215,43,43,0.15); border-color: var(--red); color: var(--red-light); }
-
-    /* ── ADD ROW ── */
-    .add-row-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: transparent;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-family: 'Barlow', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 12px 20px;
-      margin-top: 12px;
-      width: 100%;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .add-row-btn:hover {
-      border-color: var(--red);
-      color: var(--red-light);
-      background: rgba(215,43,43,0.05);
-    }
-    .add-row-btn svg { flex-shrink: 0; }
-
-    /* ── SIGNATURE ── */
-    .sig-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .sig-canvas-wrap {
-      position: relative;
-      border: 2px dashed var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--input-bg);
-      transition: border-color 0.2s;
-      cursor: crosshair;
-    }
-    .sig-canvas-wrap.has-sig { border-color: var(--red); border-style: solid; }
-    .sig-canvas-wrap canvas {
-      display: block;
-      width: 100%;
-      height: 160px;
-      touch-action: none;
-    }
-    .sig-placeholder {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 6px;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .sig-placeholder svg { opacity: 0.25; }
-    .sig-placeholder span {
-      font-size: 12px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-    }
-    .sig-clear-btn {
-      align-self: flex-end;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-family: 'Barlow', sans-serif;
-      font-size: 12px;
-      padding: 7px 16px;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .sig-clear-btn:hover { border-color: var(--red-light); color: var(--red-light); }
-
-    /* ── DATE/NUMBER BAR ── */
-    .meta-bar {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
-    .meta-bar .field { flex: 1; min-width: 160px; }
-
-    /* ── ACTIONS ── */
-    .actions {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      padding-top: 8px;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
       border: none;
-      border-radius: 7px;
-      cursor: pointer;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 28px;
-      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px; color: white;
+      letter-spacing: -1px; overflow: hidden; flex-shrink: 0;
     }
-    .btn-primary {
-      background: var(--red);
-      color: white;
-      box-shadow: 0 4px 20px rgba(215,43,43,0.3);
+    .hlogo img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .hlogo img.loaded { display: block; }
+    .hlogo span { display: block; }
+    .hdivider { width: 1px; height: 34px; background: rgba(255,255,255,0.18); }
+    .hinfo h1 { font-weight: 900; font-size: 19px; letter-spacing: 5px; text-transform: uppercase; color: white; line-height: 1; }
+    .hinfo p  { font-size: 9.5px; color: rgba(255,255,255,0.5); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+    .hright { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .hbadge {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 4px; padding: 4px 12px;
+      font-size: 9.5px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.6); font-weight: 700;
     }
-    .btn-primary:hover {
-      background: var(--red-light);
-      box-shadow: 0 6px 28px rgba(215,43,43,0.45);
-      transform: translateY(-1px);
+    .hbtn-setup {
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.45); font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 1px;
+      padding: 8px 12px; transition: color 0.2s;
     }
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
+    .hbtn-setup:hover { color: white; }
+
+    /* ── MAIN ─────────────────────────────────── */
+    .main { max-width: 980px; margin: 0 auto; padding: 44px 24px 90px; }
+
+    /* ── PROGRESS ─────────────────────────────── */
+    .progress-wrap { margin-bottom: 38px; }
+    .progress-meta { display: flex; justify-content: space-between; margin-bottom: 8px;
+      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+    .progress-meta span:last-child { color: var(--blue); }
+    .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue-light));
+      border-radius: 2px; transition: width 0.5s ease; width: 0%; }
+
+    /* ── SECTION TITLE ─────────────────────────── */
+    .stitle { display: flex; align-items: center; gap: 14px; margin: 36px 0 18px; }
+    .stitle:first-of-type { margin-top: 0; }
+    .snum {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
     }
-    .btn-secondary:hover {
-      border-color: var(--text-muted);
-      color: var(--text);
+    .stitle h2 { font-size: 10.5px; font-weight: 800; letter-spacing: 3.5px; text-transform: uppercase; color: var(--blue); }
+    .stitle::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, var(--border2), transparent); }
+
+    /* ── CARD ─────────────────────────────────── */
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 30px 32px; margin-bottom: 6px;
+      box-shadow: 0 1px 6px rgba(0,71,93,0.05), 0 4px 18px rgba(0,71,93,0.04);
+      transition: box-shadow 0.2s;
     }
-    .btn-export {
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      color: var(--text);
+    .card:hover { box-shadow: 0 4px 22px rgba(0,71,93,0.09); }
+
+    /* ── GRID ─────────────────────────────────── */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .g3m { margin-bottom: 18px; }
+    @media(max-width:640px) { .g2,.g3 { grid-template-columns: 1fr; } }
+
+    /* ── FIELD ─────────────────────────────────── */
+    .f { display: flex; flex-direction: column; gap: 7px; }
+    .f label { font-size: 9.5px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
+    .f label .req { color: var(--blue); }
+    .f input, .f select, .f textarea {
+      background: var(--input-bg); border: 1.5px solid var(--border);
+      border-radius: 7px; color: var(--text);
+      font-family: 'Montserrat', sans-serif; font-size: 13.5px;
+      padding: 11px 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .btn-export:hover {
-      border-color: var(--success);
-      color: var(--success);
-      background: rgba(46,204,113,0.07);
+    .f input:focus, .f select:focus, .f textarea:focus {
+      border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,71,93,0.10);
+    }
+    .f input::placeholder, .f textarea::placeholder { color: var(--text-muted); }
+    .f textarea { resize: vertical; min-height: 82px; }
+    .f select {
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg width='11' height='7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4.5 5L10 1' stroke='%237a9aaa' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
     }
 
-    /* ── TOAST ── */
+    /* ── META BAR ─────────────────────────────── */
+    .metabar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 30px; }
+    @media(max-width:640px) { .metabar { grid-template-columns: 1fr; } }
+
+    /* ── VEHICLE TABLE ─────────────────────────── */
+    .vtable-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    .vtable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .vtable th {
+      background: var(--blue); color: rgba(255,255,255,0.82);
+      font-size: 9px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase;
+      padding: 13px 11px; text-align: left; white-space: nowrap;
+    }
+    .vtable th:first-child { border-radius: 7px 0 0 0; }
+    .vtable th:last-child  { border-radius: 0 7px 0 0; }
+    .vtable tr:nth-child(even) td { background: var(--blue-ultra); }
+    .vtable td { padding: 7px 5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .vtable tr:last-child td { border-bottom: none; }
+    .vtable td input, .vtable td select, .vtable td textarea {
+      background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 6px;
+      color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 12.5px;
+      padding: 8px 10px; outline: none; width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .vtable td input:focus, .vtable td select:focus, .vtable td textarea:focus {
+      border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,71,93,0.08);
+    }
+    .vtable td textarea { min-height: 58px; resize: vertical; }
+    .vtable td select {
+      appearance: none; min-width: 148px; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a9aaa' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    }
+    .vtable td:nth-child(1) { min-width: 115px; }
+    .vtable td:nth-child(2) { min-width: 88px; }
+    .vtable td:nth-child(3) { min-width: 100px; }
+    .vtable td:nth-child(4) { min-width: 170px; }
+    .vtable td:nth-child(5) { min-width: 155px; }
+    .vtable td:last-child { width: 42px; }
+    .del-btn {
+      background: transparent; border: 1.5px solid var(--border); border-radius: 6px;
+      color: var(--text-muted); cursor: pointer; width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: all 0.2s;
+    }
+    .del-btn:hover { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+    .add-row-btn {
+      display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 13px;
+      background: transparent; border: 1.5px dashed var(--border2); border-radius: 8px;
+      color: var(--text-mid); cursor: pointer; font-family: 'Montserrat', sans-serif;
+      font-size: 12.5px; font-weight: 600; padding: 13px 20px;
+      transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .add-row-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+
+    /* ── SIGNATURE TABS ─────────────────────────── */
+    .sig-tabs {
+      display: flex; margin-bottom: 18px;
+      border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .sig-tab {
+      flex: 1; padding: 11px 14px; background: var(--blue-ultra);
+      border: none; border-right: 1.5px solid var(--border); cursor: pointer;
+      font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 700;
+      color: var(--text-muted); letter-spacing: 0.3px; transition: all 0.2s;
+    }
+    .sig-tab:last-child { border-right: none; }
+    .sig-tab.active { background: var(--blue); color: white; }
+    .sig-tab:hover:not(.active) { background: var(--blue-pale); color: var(--blue); }
+    .sig-panel { display: none; }
+    .sig-panel.active { display: block; }
+
+    /* Canvas sig */
+    .sig-wrap {
+      position: relative; border: 2px dashed var(--border2);
+      border-radius: 10px; background: var(--input-bg);
+      overflow: hidden; cursor: crosshair; transition: border-color 0.2s;
+    }
+    .sig-wrap.has-sig { border-style: solid; border-color: var(--blue); }
+    .sig-wrap canvas { display: block; width: 100%; height: 175px; touch-action: none; }
+    .sig-placeholder {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 9px; transition: opacity 0.3s;
+    }
+    .sig-placeholder svg { opacity: 0.18; }
+    .sig-placeholder span { font-size: 11.5px; color: var(--text-muted); letter-spacing: 1px; }
+    .sig-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .sig-clear {
+      background: transparent; border: 1.5px solid var(--border); border-radius: 6px;
+      color: var(--text-muted); cursor: pointer; font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 700; padding: 7px 16px; transition: all 0.2s;
+    }
+    .sig-clear:hover { border-color: var(--error); color: var(--error); }
+
+    /* Text sig */
+    .tsig-wrap {
+      border: 2px solid var(--border); border-radius: 10px;
+      background: var(--input-bg); padding: 22px 26px;
+    }
+    .tsig-label { font-size: 9.5px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .tsig-input {
+      width: 100%; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 400;
+      color: var(--text-mid); border: none; border-bottom: 1.5px solid var(--border2);
+      outline: none; padding: 6px 0; background: transparent;
+      margin-bottom: 18px; transition: border-color 0.2s;
+    }
+    .tsig-input:focus { border-color: var(--blue); }
+    .tsig-input::placeholder { color: var(--border2); }
+    .tsig-preview-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .tsig-preview {
+      font-family: 'Dancing Script', cursive; font-size: 38px; font-weight: 600;
+      color: var(--blue-dark); min-height: 58px; border-bottom: 2px solid var(--blue);
+      padding-bottom: 6px; letter-spacing: 1px; line-height: 1.2;
+    }
+
+    /* ── ACTIONS ─────────────────────────────────── */
+    .actions-card {
+      background: var(--blue); border-radius: 12px; padding: 26px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin-top: 30px;
+      box-shadow: 0 4px 28px rgba(0,47,61,0.25);
+    }
+    .ac-left h3 { font-size: 15px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+    .ac-left p  { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 4px; letter-spacing: 0.3px; }
+    .ac-right { display: flex; gap: 11px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 12px 22px; transition: all 0.2s; white-space: nowrap; border: none;
+    }
+    .btn-primary { background: white; color: var(--blue); }
+    .btn-primary:hover { background: var(--blue-pale); box-shadow: 0 4px 14px rgba(0,0,0,0.15); transform: translateY(-1px); }
+    .btn-export { background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.22); color: white; }
+    .btn-export:hover { background: rgba(255,255,255,0.2); }
+    .btn-ghost { background: transparent; border: 1.5px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.6); }
+    .btn-ghost:hover { color: white; border-color: rgba(255,255,255,0.45); }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,71,93,0.25); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .spinner.show { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .form-footer { text-align: center; margin-top: 18px; font-size: 10.5px; color: var(--text-muted); line-height: 1.9; letter-spacing: 0.3px; }
+
+    /* ── MODAL ─────────────────────────────────── */
+    .modal-ov {
+      position: fixed; inset: 0; background: rgba(0,47,61,0.55);
+      backdrop-filter: blur(5px); z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .modal-ov.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: white; border-radius: 14px; padding: 40px;
+      max-width: 540px; width: 92%;
+      box-shadow: 0 20px 60px rgba(0,47,61,0.28);
+      transform: translateY(14px) scale(0.98); transition: transform 0.25s;
+    }
+    .modal-ov.open .modal { transform: none; }
+    .modal-hd { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+    .modal-icon { width: 40px; height: 40px; background: var(--blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .modal h2 { font-size: 16px; font-weight: 900; color: var(--blue); letter-spacing: 1.5px; text-transform: uppercase; }
+    .modal p { color: var(--text-mid); font-size: 13px; line-height: 1.65; margin-bottom: 22px; }
+    .setup-note {
+      background: var(--blue-pale); border-left: 4px solid var(--blue);
+      border-radius: 0 8px 8px 0; padding: 14px 16px;
+      font-size: 12px; color: var(--text-mid); line-height: 1.75; margin-bottom: 22px;
+    }
+    .setup-note strong { color: var(--blue); font-weight: 800; }
+    .setup-note code { background: white; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-family: 'Courier New', monospace; color: var(--blue-dark); border: 1px solid var(--border); }
+    .modal .f { margin-bottom: 16px; }
+    .modal .f label { color: var(--text-mid); }
+    .modal-ftr { display: flex; gap: 10px; justify-content: flex-end; margin-top: 26px; }
+    .mbtn-primary { background: var(--blue); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .mbtn-primary:hover { background: var(--blue-mid); }
+    .mbtn-cancel { background: transparent; border: 1.5px solid var(--border2); color: var(--text-muted); border-radius: 8px; padding: 12px 20px; font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .mbtn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* ── TOAST ─────────────────────────────────── */
     #toast {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 22px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      z-index: 999;
-      transform: translateY(80px);
-      opacity: 0;
+      position: fixed; bottom: 26px; right: 26px;
+      background: white; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 8px 30px rgba(0,71,93,0.16); z-index: 999;
+      transform: translateY(65px); opacity: 0; max-width: 360px;
       transition: transform 0.3s ease, opacity 0.3s ease;
-      max-width: 340px;
+      font-size: 13.5px; font-weight: 600; color: var(--text);
     }
     #toast.show { transform: translateY(0); opacity: 1; }
     #toast.success { border-color: var(--success); }
-    #toast.error { border-color: var(--red); }
-    .toast-icon { font-size: 20px; }
+    #toast.error   { border-color: var(--error); }
+    .tdot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    #toast.success .tdot { background: var(--success); }
+    #toast.error   .tdot { background: var(--error); }
+    #toast.info    .tdot { background: var(--blue); }
 
-    /* ── MODAL SETUP ── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.25s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 36px;
-      max-width: 520px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      transform: scale(0.95);
-      transition: transform 0.25s;
-    }
-    .modal-overlay.open .modal { transform: scale(1); }
-    .modal h2 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 22px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .modal p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
-    .modal .field { margin-bottom: 16px; }
-    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
-    .setup-note {
-      background: rgba(215,43,43,0.08);
-      border: 1px solid rgba(215,43,43,0.2);
-      border-radius: 6px;
-      padding: 12px 16px;
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .setup-note strong { color: var(--red-light); }
-    .setup-note code {
-      background: var(--input-bg);
-      padding: 1px 6px;
-      border-radius: 3px;
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--text);
-    }
-
-    /* ── PROGRESS ── */
-    .progress-bar {
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 36px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(to right, var(--red), var(--red-light));
-      border-radius: 2px;
-      transition: width 0.4s ease;
-      width: 0%;
-    }
-
-    /* ── DIVIDER ── */
-    .divider { height: 1px; background: var(--border); margin: 8px 0 24px; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      .header { padding: 0 16px; }
-      .main { padding: 24px 12px 60px; }
-      .card { padding: 20px 16px; }
+    @media(max-width:600px){
+      .header { padding: 0 14px; }
+      .main { padding: 22px 10px 60px; }
+      .card { padding: 18px 14px; }
+      .actions-card { flex-direction: column; }
+      .ac-right { width: 100%; }
+      .ac-right .btn { flex: 1; justify-content: center; }
     }
   </style>
 </head>
@@ -493,321 +340,303 @@
 
 <!-- HEADER -->
 <header class="header">
-  <div class="header-logo" id="logoBox">
-    <img id="logoImg" alt="Logo" />
-    <span id="logoText">IB</span>
+  <div class="hlogo" id="logoBox" style="background:transparent;border:none;">
+    <img id="logoImg" src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAD2AOEDASIAAhEBAxEB/8QAHQABAAEFAQEBAAAAAAAAAAAAAAcEBQYICQMCAf/EAFcQAAEDAwIDAwcEDwQGBgsAAAECAwQABREGBxIhMQgTQRQiUWFxgaEyN3aRFRYjMzVCUnOCkrGys7TBQ3KiwiRig5Ok8Ak0U1Rj0hclJkRkZWajw9Hh/8QAHAEAAgMAAwEAAAAAAAAAAAAAAAUDBAYBAgcI/8QANREAAQMCAwQIBQQDAQAAAAAAAQACAwQRBSExEkFxsQYTMjNRYYGhIjSRwfAHQtHhFCNS8f/aAAwDAQACEQMRAD8AgWlKVpVhEpSlCEpSlCEpSlCEpSvtDbiwShClAdSBnFcE2QATkF8UqndnwGm1LcnRRw9U98kqH6Oc/CvKPdIkt1LNtTKuTyv7KHFWtf1ECo3Txt1cFYZSTv0Yfoq2lZBZ9Abm3lxP2I2x1Q80oclzI/kQPrBc5Ee+s0snZv3tuSj5RadN2VCunl9wLi0f7jiB+qoXVsQ33VlmFVLtRb1UV19ISpaglCSonoAMmthLN2QNTyGgnUG5caOn8Zu32oKV7nFKSR9VZpa+yDt2gIN+v2q76pP4kiclDfuCU8Q/WqF2IN3NVpmCvPaf+ey1CeeYYcLUiTHYWBnhedSg/UoiqM3q1cRQmalx3OA2htaio+ogYP110BsHZ42YsvCYugbY+oeM0uSs+0OqUPhUgWTTun7GgIslitdsSBjhhxG2Rj9ECoXV8h0AVlmDwjtElc3bPpvW18bQqw7fatn8WPO+xq22v95zFZraNg97rqtC29GQLQ0fG53NtXwaPEPeK6AUqF1XK7erTMOpm/tWmdl7Je4khfHeNdaetSVDmiDBXLCfZ3oQfjV6PY8uYTlO7Cu89J082U/V31bZUqIyPOpKsCCJosGj6LSu/dlHc6DxP2bVem76EjkzKjLhqV7OAEZ9qgKiLWmlNa6EWE640jcrOzkJE5AEiIok/wDaIyE+oZJ9VdMa85TDEqO5GkstvsOpKHG3EhSVpPUEHkRUjKmVmhUMtDBIM2/TJcvGXG3mUvMuIcbV0Wg5B9Xt59PCvqtpt8Oy5AliRqTakM2e7c1vWdRxCmY/FSOjSuuPxfRwfKrVZCn0S5VvnQ34FyhOFqZDfSUuMrBwcg+Gf+emWVPViX4TkUircNdANpubeS+6UpVxLEpSlCEpSlCEpSvOU+xFYL8l5DLQOOJXp9AHUn1CuC4NFyuzWuedlouV6V5yn2IrXeyXm2UEEgrVjix1wOp9gzUibVbJ7i7lIanRYg0tp53BFzuTWXnkHxZZ8RgjmSB4hXhWz+2/Zq2x0gtM2bbF6nu3JS5t5If870pbPmD1ZBI9NL5a8DJgunFPg7nZym3kFpbpWx6p1c6EaP0hfL8nj4S+zHLUf/fKHCPYrFShYOzFvHdmUruLmmdOJJzwvSFyH0j2ICmz9YreZlttlpDTTaW20AJShIwEgdAB4V9VTfVSu3prHh9PHo2/HNaoWjsfSXFod1BufOUodUWy3IjY/T4jn9WsytHZI2jiuh26t36/OfjKn3JQKv8AdBBqfaVAXE6q01jW9kWUf2DZPaWx8Jt+32n+JPyVyIiZCx7FO8R+NZxAgwrfHEeBDjxGR0bZbCEj3DlVRSuF2SlKUISlKUISlKUISlKUISlKUISlKUIStfe1vssNZWhWuNKRUo1famuJSEJ/CLCRzaUB1WBnhPU/J8QU7BUoBsuCARYrlpBlNTYjcpnISvqknJQodUn1j3csHxr2qT+1ZoNvQO8S50BkNWLVYXLYSBhDMxJ+6oHoCshQA8VgdE1GFPaabrWXOqyVfTf48pA0OiUpSrCpJSleM6U1CiOSnslCOiQcFaj0SPWff4nwrq5waLldmMc9wa3Ur7UZDkuLb4EN+fcprgahw2ElTjyycAADwz/z1xtxsB2arfYFx9V7kNx7zqPAWxBIC4lu8QAno4sflHIB6ZPnGv7JOy40baE631XFSvV90aCkoWn8GsKHJpIPRZHyj1HyfAlWwNJJ6h0p8lrKOiZTN8TvKUpSq6upSlKEJSlKEJSlKEJSlKEJSlKEJSlWK9ay0jZXFtXfVFlgOo+U3InNoWP0Sc59VcgE6LguDcyVfaVFV57Qm1VubWUahcnupOO6iRHVE+xRSE/4qwm99q/TLOPsLpa7TT4+VOtxx7uHvKlbTyu0aqz66nZq8c+S2LpWn957Vmr33Fi06dssFpWQnvy4+tPvCkAn9GsKum/u689K0HVKozaj8mNEZbI9igji+NTNoZTrkqr8Xp26XK31pXPaNvFufHeDzetbspQOcOOBaf1VAj4Vm2k+05uBa30i+N2+/wAcqBWHGQw7j0JU2Ake0pVXZ1BINCCurMYgJsQQt06VHe028GkdxUCPbn1wbslPE5bpWA4cDJKCOS0jn054GSBUiVTcxzDZwTOORsjdphuFCnbT0odSbFXOfGQfshp9xF2irSOae7++c/R3ZWfakVpI24l9lt9CeBDqEuJTnOAoAgfGunV8t0e72WdaZaeKPNjOR3R6ULSUn4E1y5sbTkaAYDyCl+C87Gez+WlZz9QIFXKB9nlvileMR7UQf4Hmq2lKU3WbSpO7KmhW9e7yty57IesmlEImvpPND0tX3lB9IGCrB8UKHQ1GPE2jz3lcDSea1ehPifqrcrsKaf8AsXsc1fn0Dy3UU9+e8rGDwhZbQPZ5hUP75pfXyWaGDenWDQhz3SHcp7pSlKloUpSlCEpSlCEpUYb9bu2/bK2MstR0XC+TEFUWKV4ShI5d45jnw55ADmoggEYJGrt+7QO6l1U6BqFNvZcOe6hRm2+D1JWQVj9arMVLJKLjRUKjEYYHbJzPkt8asl61dpSyOqavGprNb3UjJbkzW21fUog1zwverdVXxIRedS3i4oHREma44kewKOBVkqy3D/FyoPxr/lnut87z2gdqbahzGpDNdR/ZRIjqyr2KKQj/ABVhF77V+l2Ej7DaYu85Xj5U43HHuKSs/AVqHSp20MQ1zVV+L1DtLD881sPeu1dqx51f2H03ZoTR+SJKnJC0+8FA+FYPed/N1bmhbStULiNL/FiRmmiPYoJ4x9dRhSpm08TdGqq+tqH6vKvN71Vqe+AC9aiu9ySOiZUxx0D2BROKs1KVKABoq5cXG5SlXK0WC+3gLNostyuAQMrMWKt3h9vCDire62tpxTTqFIWglKkqGCkjqCKLhFiBdfNKUrlcJSlKEL3gS5UCazNgyHY0phYcaeaWUrbUDkKBHMEVvd2cdzP/AEjaNUqepCb7bSlmelKeEOZB4HQByHFg5A6FJ5AYrQqpb7Jd/csm9Ftj96ERrq25CfB55yniR7+NCBn1mqtXEHxk7wr+HVBhmA3HJb1VzP1zHRB3N1zb0ABDOqLgUj0JLvL4CumFc1dzfnm3A+kcz+IaXUffD83J7ifyrvTmFZKUpTtZNeNxUE2yaSP/AHV0fWhQrol2foaIOxmh46BgfYGG4R/rLZStXxUa503n8ETPzC/3TXSLZf5ndFfR+B/LopRiHeDgtJgw/wBJ4/YLLaV+LUlCCtaglKRkknAAqA5u9mtda3ybatj9EMX+FBdLMjUF0eLMAuDqGwCkuDpzCs+PDggmim6gPeTtabhyNZXK36LkRbFaIclyOyoRUPPvpSeHjWXAQCcEgJAxnGTjNQxf93d0L6HU3TXuoXm3fltJnLbbP6CSEj6qXzbTcv7bZ9rk6Ivzt0D6y61Ht7rgUeI5UkpBCknwIyCKyTT3Zs3pvbIeY0TKiNk9Zz7UZQ9fC4oK+FCFIXYC1mLTuJfY2odUogWdy0Kd4J84NsKfDzQSrzyBx8JX68E1vjbLhAukNE22To06Kv5D0d1LiFexSSQa1d7P/ZJtVialXLdJm332Y8kIjQGXFlmMOpUpXm8az0xjAAPXPK7ae01btpe1nYdM6JVIg6e1XaJL061l5TjLbrKVqS4jiJIPmAerKh0IAEKLe19Kdkb5XNpxxSkxo0ZpsE/JSWkrwPesn31ENSn2rznfzUY9Aij/AIVqosrQQd23gFjKs3nfxPNKUpUqrpSlKEJSlXK0WG+Xh0NWmzXG4OHomNGW6T+qDXBNtVyATkFsbsb2dLNeNL2/U+s5Mp7y9pEmPAjud2gNKGUlxQ84lQIOElOM9T4Tlp7anbiwpAtujrSFA5DkhnyhxJ9S3eJQ9xrJdN21Fm07bbO2riRBiNRkn0hCAkfsqvpFLO95OeS18FHFE0WaLr8SlKEhKUhKQMAAYAFc9e0BcfspvRquSUpTwXFcfCRj71hrP+CuhdYJG2f20Zur90VpGDJlyHVPOrmKXJC1qJKiUuKUOZJ8K7U0zYSSQo6+lfUtDWm2a57oSpaglCSpR6ADJNfUhh+O53chlxleM8K0lJx7DXTKz2Wz2ZotWi0wLc2eqIsdDQPuSBWuPbxlNiJpKFwtl1Tkp0qwONIAaGM9QDk+3h9VXoqzrHhoalNRhfURGQu08lqvSlKvJSlZnsalSt4tJBPX7LMH3BYJrDKkPs3RjL3w0s0lOSmUpz9Rta/8tdJTZh4KWAXlaPMLoFXNXc355twPpHM/iGulVc1dzfnm3A+kcz+IaTUffD83LT4n8q705hWSlKU8WTVLefwRM/ML/dNdItl/md0V9H4H8uiubt5/BEz8wv8AdNdItl/md0V9H4H8uilFf3g4LS4N3B4/YKxdqK4yLV2fdZy4rqmnTbVMhaTggOKS2ce5Zq67EWeFYtmdIW6BHQw2mzxnFhIxxOLbStxR9alKUT6zWJdtF7uOzPq9WeakRUfrS2R/WpA0y+xZturO7JJS3GtkdJA6khtIAHrzS6SRkTC95sALk+ACcNaXkNbqVkVKjuZr64LURFiR2k+BXlav6CrVJ1Xfn8gz1Nj0NoSn4gZrFVH6gYVFkzafwFh7kck6j6P1Tu1Yev8AClmoF1f927cWimuvk2lZL3s4lPJrMtC3q6O6hYivzHn2ngoKS6sqxhJORnp0rDZn+k9vCF4+SaFPuzJX/wCen2BY1FjNMZ4mltiQQfGwP3VCvon0cnVuN8rrXjtJSPKd8NUOZziUlv8AVbQn+lR3WZb4O97vDq1ec4u0hP6qyP6VhtbuIWYOC88nN5XHzKUpSpFEr1ofT7+qtYWrTkZ0MuXCShjvCniDYJ85WPHAyceqt29J7CbZWCKyhdgbu0lA8+RcFF0uH1o+QPYE/XWtXY/trk/e+3yUJ4kW+LIkueoFstA/W6mt5aV10rg4NBT/AAmmjdGZHC5urNatJ6VtLodtWmbLAcHMKjQWmiPelIq818vOtstKdecQ22kZUpRwAPWatlt1Lpy53BVutt/tU2ahBWqPHmNuOJSCAVFKSSBkjn6xS/M5p0NluWiutKUrhdkpUY9pnWV10Rte7c7HK8kuUiY1FYf7tK+AnK1HCgQcpQocx4+mtMbxuLr27pcRcdY3x9tz5bXlriWz+gCE/CrUFI6Vu1ewS6rxFlO7YIuV0Lvl9slij+UXu7wLa1jIXKkJaB9nERmtI+1Br60691+xJsLrr1tt8QRm3lpKQ8vjUpS0g8wOYHPn5uailalLUVrUVKPMknJNfNMIKQRO2r3KT1eJOqG7FrBKUpVtLUqc+xdp166bqOX0pWI1liLWVgcu9dBbSk+1JcP6NQpbYUu5XCPb4EdyTLkuJaZabGVLWo4AA9JNb/7EbfM7daDj2pfduXOQfKLi8nop0geaD+SkYSPTzOBk1UrJQyO28pjhlOZZg7c3P+Fn1c1dzfnm3A+kcz+Ia6VVzV3N+ebcD6RzP4hpdR98PzcneJ/Ku9OYVkpSlPFk1S3n8ETPzC/3TXSLZf5ndFfR+B/Lorm7efwRM/ML/dNdItl/md0V9H4H8uilFf3g4LS4N3B4/YKOu3U93XZtviM/fpMRH/EIV/lqT9S22S7o1EGK2VuMttjgHUhOMgVFHbs8/ZBmJ/3q+Q2cenKlH+lS9re5v2uxKejHheccDSVfk5BJP1Cs7jRhGHzdeTsbJvbW1t3mtBRB5qGdXrcWUat2a6ryRbpKQOqltlIHvPKvv7EOo/6xMgR/UqQlRHuRk1RSH35Cyt95x1R/GWok/GvKvnsyUjT8LCeLhyA+69D2ZTq4DgP7+yz7b622puWuU1cm5ktCSAhCVJCAeRPnAE+jPrqPLF937duoFnmI2iW2/YVPsq/qay3bRlxeoi6lJ4G2VcZ8BnkP+fVWJaC+7dtjcZ3r5NYILPs4ksrr2noRK2XCgWxhmZ0vnpnmSfLXd6LFY4wtqiC6+Q9PLJavbwHi3a1ef/nk0f8A311itXvX0jyvXeoJWc99c5Lmfa6o/wBaslepMyaF5fIbvJ80pSldl0VfYbzdrDckXKy3GVbpjYIS9HdKFgHqMjwPoq/z9zdxJ3F5RrfUBSoYUlE9xCSPYkgViNK6lrSbkLsJHtFgV7S5UqW6XZUl6Q4eqnVlRPvNbEdhS1qd1bqO9cuGLAbin2uucX/4a1xrItD631VoiY9K0veX7c4+kJeCUpWhwDOOJCwUkjJwSMjJx1rpMwvjLWqallbFM17swF0jqy6h1bpbTxIvuorVbVhPF3cmWhCyPUknJ9wrQHUe5ev9Q96Ltq67vtu/LZRILTSv9mjCfhWJkkkknJNUW4f/ANOTaTGh+xv1U9dqrdyya6bt+ndMOOybdCfMl6UtBQl5zhKUhCTg4SFL5kDJPLkMmBKUq/HGI27LUmnmdO8vdqlKUqRRJSlKEL7ZccZeQ8y4ttxCgpC0HCkkcwQR0Nbn9mDeJWtYX2r6ieH2wQ2uJt5XLy1odT+cTyyPEc/BWNLayHba/PaY19Y78wtaDDmtrXwnBU3nC0+xSCoH1GoKiESstvVujqXU8gI0Oq6SVzV3N+ebcD6RzP4hrpVXNXc355twPpHM/iGlVH3w/Ny0OJ/Ku9OYVkpSlPFk1S3n8ETPzC/3TXSLZf5ndFfR+B/Lorm7efwRM/ML/dNdItl/md0V9H4H8uilFf3g4LS4N3B4/YKMu21900Lo6GOsrWdvax6cpeP9KmDWkWDKsTiZ8nyZtCgtLmM4VzA5ePU8qh/tf/d5W1Vv6+Ua6gcvTgkf5qkrdMOG1RSkKLYePER0Bxyz8ay/SOZsGFzvczaFtDob5bs/NaPDmF9UxoNs9Vgqk25CjhyS+PRwJb+OVfsr87+Kj73BSof+K4pR/wAPDVMlJUoJSCSegAr28lkA4W0W/W4eAfHFfPzZHu7DBbhfncr0EtaO0fdZztvdi+69bTEYaCW+9SppPDnmAc+nqKjraH/Se1xvJL690xa2f+HA/wAlSTtvaPJW3bit9lxbie7CWlhfAM5OSOWeQ5VG3Z7+79oXfKWef/rG3sg/3G3gf6V7v0SbUjCo/wDJ1ztwvksHi5jNW7q9PutPrs7311lvHn3j61fWomqWvpZ4llR8TmvmvSV5kUpSlCEpSqxi2XB7BbhPkHoeAgH3mo5Jo4heRwA8zZdS4N1Ko6VemNM3Vw4Whpn1rWD+zNTbt92Y5WotOQr3cdWtQUS0BxDDEIunhPpUVpwfcapx4rRyOLWSAkeGfJSUzDUvLIsyFrxSt0LN2XNvYhbXPm3y4rT8tK5CG21H2IQFAfpVnFk2a2vtC+OJou2OH/4tKpQ+p0qrs6vjGlymbMHnOpAXPgAnoM16ojSF44WV8/SMVMvaNTb2N2rnAtcKLDiQ22WUNR2ktoH3NKjhKQB1UajuszV9K3xyOZHGMja5P/i9pwH9F4Kukiqqqqd8bQ7Za0C1xe1yTf6BWRNulEc0pT7VVSuIU2soUMKBwayWsckq45Dix0KiRV7AcXqcQkeJQLADQf2s/wDqV0HwroxS07qNzy95IO0QbgDyA3kLzpSlaZeQpXpGSVSGkjqVgD6686r9OsmRqC3RwMl2W0jHtWBXBXIFyum1c1dzfnm3A+kcz+Ia6VVzV3N+ebcD6RzP4hpJR98PzctXifyrvTmFZKUpTxZNUt5/BEz8wv8AdNdItl/md0V9H4H8uiubt5/BEz8wv9010i2X+Z3RX0fgfy6KUV/eDgtLg3cHj9gox7Uf3XcjZWJ+Vq1t7H5tTZ/rUpbh3h63QWY0cJ45PFxKUkKwkYzyPic1F3aJ+7b+bHROubrOeI/uIZNSfuPb48mCzLdmtxlskpSHASF5xyGMnPL0Vk+k7qhuFTGnNnW1vbK4vmfK60uGCM1TOsFx+W91Ha5MhaSlT7hSfxeI4+qvGvbhjAc3nFEfkt8j7yf6V+95HTgpjqUfQtzI+AH7a+f3Nc7tu978rr0EEDQLMtqUud5cFed3eED1Z51GfZ/kd1rPfu6g/e9QPJz+aS7UwbdXFqZbXozcNqMY6hkN5wrizz5knPL01B2xjv8A7I7/AF2H9pqS8KB/utqV/mr3zohFHHhMDY3bQzz4uNxn4HJef409xqpHOFj/AEtU6UpXo680SlKUIWV6GhtKaemrbSpYXwIJHycDJx9YrKax7SUqCxZ0oXLZbcK1FaVrCSDn1+rFV799tTRIVMQoj8gFXxAryTG4aurxGUtY51jYZE5DL6JHUNfJKbAq5Vupt7H8l0HYI+MFFtjhXt7tOfjWhT2q4KQe6ZfcPrASP21LE3tVXtmDHiWLSVuipYaS3xTJC384GM4SEY+s046PYNWQue+VmzcC10+6PvbSPe+bK4Flt1StFr12i91Lg4ssXmLbW15HdxITeAPUVhSh9dYPede62vLa2rpq2+S2lnKmnJzhbP6OcfCta3D3nUrQvxmIdlpKyfdm5In7l6kmKdSEruT4QSeqUrKU/ACsSXOipOC6D7ATViPM5NflKm9FIS4ulkJv4WH8r0d/6118ULYaOmY0NAA2iXaC27ZV1kXRPAQwlXEfFXhVqpSntDh1PQtLYRrr4lecdI+leJ9I5my1777N9kAWAvrYedhcm508EpSlXlnErNdirQ9e94NLQWWwvhuLUhwHp3bR71f+FBrCq2p7E2hHGWZ2v7gzw9+lUO2hSeqc/dXBkekBAI9CxUNRII4yVaooTNM1oWzlc1dzfnm3A+kcz+Ia6VVzV3N+ebcD6RzP4hpTR98PzctFifyrvTmFZKUpTxZNUt5/BEz8wv8AdNdItl/md0V9H4H8uiubt5/BEz8wv9010i2X+Z3RX0fgfy6KUV/eDgtLg3cHj9goy3l/0ntYbMROvdouj2P9hn/JWdbqlzyyCDxd33aiPRnIz/SsF3B+7dtXbNrr5NZJ73s4m3U1JG4158l7q2tx2HFrT3ilOthYSMkDAPLPI1iemQidhEglfsjLde5uDa3n/a1WDFwrGlovryUe1UIgTVgKEV4JPRRSQn6zyr98vmD5EhTQ9DXmD6k4qnWpS1FSlFRPUk5rwn/SPE/Qfyt58Z8B7/wpP0DZ3bVbnHJCk97JIUUpUCEgdOY5E8zUBbBnj7PO807xkXq+ug+ryVH9c1Om1ynTZHwpSihL5CAeg80ZxWvmxsjuuxprmeD/ANcmXNWfTxhKK+hOi3VHDKfqW7LbaE33555anPRec4yXieXbNznyWtVKUrfrzpKUpQhKUpQhKUpQhKUpQhKUpQhKUpQhKV6xY78qS3GisuPvuqCG220lSlqPQADmTU+7P9my+Xt1m6a472zWz5QhA4lPDwBHRoe3zuRGBnNRyStjF3FTQ08k7tlgusI2G2pue5OoEqcS7F0/EcHl0wDHF4902ehWR7kg5PgDvjaoEO122NbbfHRGiRWkssNIHmoQkYAHurysFntdgs8a0WaCzBgxkcDTLScJSP6knmSeZJJPOq6k1RUGZ3ktRRUbaZltSdSlc1dzfnm3A+kcz+Ia6VVzV3N+ebcD6RzP4hrmj74fm5dcT+Vd6cwrJSlKeLJqlvP4ImfmF/umukWy/wAzuivo/A/l0VzdvP4ImfmF/umukWy/zO6K+j8D+XRSiv7wcFpcG7g8fsFGWo/u/bq0w318m0Y677OJ55NZ/uVbOOS1cvKmG0lsNlDisKOCTkDx61gDX+ldvB3x8k0L9WZQ/wDPWU7jOuL1O6hZJS22gIB6AEZ/aTWA6dTRR4URI3au4AZ2sczf2K1+BMc6rGybWBVi7thJ8+SFD/w0E/txX6hURKvObedH98Iz7sH9tU9e8WJKlLCI0Z15ROMIQTXiTC5zgI2Z8L+xutu4AC7jkpQ01OhK0r5VCj+TNMIXxN5zhSRk8/H05rWHawGL/wBH5Pe8X3Hzn05mhH9K2Meir09tfd1y1JQtqBJkO8+SMNqPX1AVr5pZlUX/AKOuOFJKVLQVnl1CroSPgRX0jgQlFLTiZtnWbcWtbTcNOC8xxUsvMWG4+Ja20pStksElKV+pSVKCUgknoAKEL8pWTWbb/XN4Qhy2aQvklpZwl1MFzuz+mRw/Gs4s3Zx3UuDiUyLTCtiFc+8lzWyB7Q2Vq+FRulY3UqZlPK/stJ9FENK2UsnZNvLqSb3rCBEI6JhxVv596ijH1Gs2s3ZY0LGQhVyu18uDo+UEuttNq/RCSofrVC6siG9WmYXUu/bZaa19ISpaglCSpR6ADJNdALLsltZaXUuxtHQXlgdZa1yQfalxSk/Cs0s1kstmbLdntFvtyFdUxIyGgfckCoXYg3cFaZgsh7TgPf8Ahc8bNt3ry8JbXbdH3x9pz5DohOBs/pkBPxrOLL2b907g6EybZAtaD/aS5yCB7muM/Ct5a8HZkRqQ1HdlMNvPKKGm1OAKWoJKsAdScAnA8BmoXV7zoFaZg0Q7RJWq1k7Jt2cRxXrWMKKr8iHEU+D+kpSMfUazmw9lzQEItOXOferotPy0KeS00v3ITxD9apC3E3V0Bt9cbfb9X6jYtkq4c2G1NrWeHOONXAk8Cc8uJWByPoNYvrvf3TGlNT3Kw/a9qm8OWltmRc5VsgB6NEjuNpcDy18XyeFWengfRUDquV29WmYdTM/as70fobSOkGuDTen4NvUU8KnUN8Tqh6FOKysj1E1kVQjr/fw6b1FPFv0qLtpezKjJu95FzaaKFPoS4BHaVzfKW1pUQCDzI5YycOnbg7sSJ2sbhA1NbWbf9to0dYWVQUHyV92QziW4cecENK4QDkEqyRywYCSTcq21oaLNFlsPrC8ybDZhcItkn3lwyWGfJoSQpwJcdSguY/JSFFR9QPQZIrrhcbfbm+9uE+LEbBSOJ95KBlSglPMnxUQB6SQK1K3Rna60y1uBpfVGuJGqUwrXY7hDklpMdTQ+yiAoFtHmpWckFXUpCM1Yty7ZoeXorXOt77OQ5uHF1yuOyHpqg8ltuY2huOlsq85oRwVA8Ph182uF2W7lc1dzfnm3A+kcz+Ia6VVzV3N+ebcA/wD1JM/iGrNH3w/NyoYn8q705hWSlKU8WTVLefwRM/ML/dNdItl/md0V9H4H8uiubt5/BEz8wv8AdNdItl/md0V9H4H8uilFf3g4LS4N3B4/YKK4EyLa+3bdk3V9uIu56QaZtvenhEg982SlBPU/c18v9U1M2qU6XabTL1G/b4qEjAelSEsjH94kcqs26e12idzIDEXV1oTLXGJMaS24pp9gnrwrTzwcDkcjkOXKsEtXZW2biSPKJtluF4dHRU+5PKx7kKSD780smginZsStDh4EXHunLJHRnaYbHyV1u+8uw+mc99rDTqlI/wC5AzFfW0ldY8rtSaNnKLGjtJa21W50R9jbQSgn2khQ/VqS9P7W7b2DhNn0Lp2K4no6m3tqc/XIKvjWXoSlCAhCQlKRgADAAoigihFo2ho8hZD5HvN3G61v1C7vVvjEOmFaSd210dKITdJc94Lnyms82kN4BRnoQRg+KsZSZsc0Ppxe3SdA+RcNiRCTCQyFeclCQAlQP5QICs+kZrJaVMDY3CjIBFitYJHZJaVNWY+ultxSSUJXbApYGeQJDoB5eOB7KyKzdlfQ8ZtBul5vk90HzuBbbLav0eEqH61Slftw9J2LW9q0fdrtHh3K6x1vxe+ebQhWHG20t81A8a1OeaADngX6OeK3LtAbZsW24y7bdZd8egyWIZh26E4t9+S8pxLbDYUEhaz3SzjPQZ8Rmc1Ux/cqbcOpmm4ZzVwsux+1dqcQ6xpCG+4nxluOSAfWUuKKfhWZWSy2CzlxqyWm2W7GA4iHGQ1jxGQkCogb7RES42mcqw6Jvcm+IvUeyQrPNUmI+9KdbLikucWe5CAhwKJyAUjoDkR7ZNZ7gK1TrGyWi3taR1hqfV0KEpEtaJSbakQON11JxwuEoZBTywoKFQue52pVlkUbOy0BbaVjkTV0KRuNcNECNITMg2xi4qfOO7Uh1xxHCOecgo9Hj6qwHs9XHW/21bgaZ15qBF7uVknxENvttBtstORkqQpKByQVDClJHIKKqjrtRS1x9ytRRVSXoVvm6PtLV1lMKKXGoarwpt8jHXKHCD/qk11Ui2aiXS2S5aocW4w35KGkvKZafSpYbKlJCykHPCSlQB6ZSR4VH8rffbGPrpvRar+4q7Gebc6BDe7piTx8AbW4UhIKlAgEEj1gc6wHZa0aA032nNQ2XblyIbUvSkd6Q3Fll9tmQJBBSlRJ6oU2ojJ5qPpqzXew3S4bOb1wbXbZMq4u7hLfYajslbrgS/CcykDmcAE8unOhCzqdvpJjark8Ohbg5oiHevsFL1KJaAlqXxhsnuMcRaDhCe8zjJ9PIxZqvcLX26exWtLkm+aDt9sFscmC1QH3HrvGabeALchKlcKOJKSeIAc+HA58sxuu3O5kpdz2wFtta9B3TUhvDl7M0JfZiqlJlLipZ+V3neAgL5pwefqroeyWpNRaruV13AlaRjNPWqdbQ5pm3KjSJ/lSQlb8pS88S0gZCfOAUc+niEK1XmDuA7uzY7DI3Ev9yftOjXNQLTESmIi6y2ph7ptxlvzeA8aEED5SUAdTmsL0DYNFWS67Ha3tN3enap1HOUu8renLdXMddjOB1a0kkJLTiygYAPnHOTzrYTbnbJWmLrBv951ZdtS36Ja3bUZcpDbaFMLeQ6BwJGQUlCQCVHqr0jFRY9oNsrJqh7U9s0Za493dkeU+U8BUW3OfnNpUSlv5R+QB8BQhQH2mYkmzbyXa5XvU96sdh1Fp9qEyq3WRM5c4pUsOQQ4r70pXEF46K4hk+aKybRWhryzaN1rTEs94QzddE2i32sz2e6dfWi2PMlsqOEFxJKQvBwknnitkKUIWqadjNYwbtHuFu0Zoa8O3i025mS/qBsPqskhqM209hrmh4Hg4gRnzs+HWStUbcQLPtjuFBm2u4akiXy9OXpu32hIaltcQYADJJwXEForHpxjHgZipQhay7H7WxtR33V131JYNaosF1gRYBGsJKvspcnW3e9U65wqCm0o4GUJA5EJ69amu7bY7e3fVDmp7ro2yzru62G3JMiKlwrAwASDyKgABxYzgYzisvpQhK5hXq5t3vVuqb02cpuOoJ0ptXgpC3MpI9XWugHaE1i3oTZzUmou9DcluGpmHz5mQ55jePThSgo+oGud9qjKhWuLEXxBTTeFBQ5pUSVKHuJI91XKFt5b+CV4vJswbPiVUUpSnKzC8biAbZNCjgeSun/Aquh/Z4mouGxOh5CCCBYojRI/KbaSg/FJrnukIKgHUcaCfOT6R4itxuwhfvsjsj9r77iTM07cZEFxOcnhUoupPsytSR/dpViDfiBWhwV92Ob5/nJSxqDWEWz6/0vpB2G84/qJuatl9KhwteTIQtQUOp4gvlj0Vady939vdupzFv1Zf0Q50hkvtRkMOOuKQMgKPAkhIJBSCogE558jjEt8L1aNOb5bS3q+3GLbbeyL0h6VKeDbbYVFRjKjy5qAA9JIFR9f9faVZ1puLemI0zU0DXVkYt+n5FuguSESX2m3GHoQITlKitaF46EEHPyQV6dKTd9Ny7tY9homv9Dwn5KrgqA+w4tKE9xHfWhXE4leR5ySG+WSC6D4Zr0j7haxec1fbbrp+HYrpaNKMXeOwJIklEhxMjiSpY81SUqZSOQHj1BFWuRpHUGq+xxa9JRYxjX1WnYCWo8tJaPesBpYbUDjhJ7vh54wTzqi1PoPdrVs5nVEKZYtIXG/WNdj1Fb5C1S/JY4fcU24wtHmreDbhBzwpBJwfECFjStZbq7h2W6yNO6yY0unTujrdcpiGrc28q5S5cIyFDiVzZQAOEFPME5545ZJrS2ak3C7MehPInU3eXKZtMy6QJFxMNV6b7kKejF7lwqWohWf9U+qqpzs/Fyy2iFG1xd7Kv7AxbHqEW1CUou8dhHCn5WS2rBUnj5nhOMYznPX9sNIT9srVt5fbebzZLZHYYZTKWUuHuUcKF8TfCQrGeacdT4UIWuelrntdbtcbcXaVpO3aOi2h6+WeczOkJmIjTGFMutpTJPF3mFurKFZ5FRCfCr3pewXe2bQab1JYdOO3ibpnXVwn3G3RUBT0psSJMdxTafx3UpKOHx8zl0rYOyaG0dZtOwNPW7TVsatdvdD8SMuOlxLToJIdBXk8fM+fni59ayKhC1ctml9y9U6p1LudbdIu6euqL9brtZbbd3EtqmMtRHIzzS8E90taFA+cORIHpNXu3bOa71W/qjUmsbtA0vqS63W33ezv2hZkm2OxmVspS4FBIc+5qCSArCjk9OVbEUoQoItGyN/sV+tN5GtrtfbtK1PFut9nvFMcLaYjSEFIbSeaVKW2jgycA+gGpbuOkNN3G+yb3cLSxLnS7YbTIU8StDsQrKy0psngIKiTnGfDOKvlKELGtF6A0VosH7VdMWu0LUgoW7HYAcWkkEhS/lKGQORPgPRWS0pQhKUpQhKUpQhKUpQhKUpQhKUqBe1Tve3oS2q0hpR9uRrO4N4TwnItzSh9+X6FY5pSf7x5YCgC64JAFyof7Z+4TWsNfxdB2t4O2fTTvlFyUk5Q9NIIS34g8AyD6y4OoFQrXhDjpix+6Djjy1KK3XXDlTrh+Us+s/8A669a9qeUsPVMz1KyeIVX+RLloNEpSlWVRSpU7JGtW9F71otkx4NWrVrKYaiSAlExv7yf0slPrU56qiuvGdH8qiqZS6plwKDjLqVEFpxPNKgRzGPrwTiq1VF1sdhqruH1PUTAnQ5FdNNR6X01qTyb7YtPWm8eSqUqP5fDbf7onGSnjB4ScDp6KuECHDt8NuHAiMRIzQw2yw2EIQPQEjkKifst7st7l6IEa6OIa1VZwmPdWCQC4RyS+kDqleOeOQVkdMZl+ka1yUpShCUpShCUpShCUpShCUpShCUpShCUpShCUpShCUpVr1HqLT+m4Xluob3bbTG/7WbJQyk+wqIyaEK6V8urQ02p11aUIQCpSlHASB1JPorXnXvaz0Jay9D0XBn6wuCOXEwgsRUHplTqxnGfEJIPpFa3bm7n7h7mFbOqb0INoUciy2sltg+p1WSXOg5EkeI4akjifIbNCgmqIoRd5sp6337T0WIZOl9qnGLrdh9zkXojihws+KD0dX1weaeXLj5itVkIcMmTNlyn50+W4XZUyQoqdfWTklROfHw/bX6y00wylhhtLTSfkoSMAf8A95depr6prT0gi+I5lZ2txF0/wtybzSlKVcS1KUpQhKUpQhVmm75fdJaqh6u0pKTFvMPzcK+9S2vxmXR4pI5Z8OXMYSU747F7waa3VsRft6/Ib1FTi42l5WHoy+hIH4yM9FAeo4PKtAqRXJsC7x73ZrjKtN4ikKjzoquFxOOWFflJxywfDl05FfU0m2dtmqc0GJdWBHLpuPguotK1M2t7WS4TbNs3YtSmiMIF9trRWyvwy60OaDyJ80c/BAFbL6P1hpbWEATtL6gt13YwCoxX0rKPUpPVJ9RANKyC02K0DXBwu03CvlKUrhdkpSrNftWaWsAJvupbNa+Hr5ZObZx+soUIV5pUS3/tIbLWbiS/rmHKWOiYTLsnPsU2kp+NYRdu2DoVLS1WDSurL1w/2iIiGmj+kVE/4aFwTbVbI0rTu9drvWUhGbDtzbISFckuT7p3x9pQgII9lYZee0Tvdc3MN6isVlaUOf2NtocKfV93Cv21K2CR2jSoH1cDNXj6rfeqO6XS2Wpjv7pcYcFr8uS+ltP1qIrnBd9a7i3pTgvW5Wq5TavxI80xUH2oRlJrFnLPb31KcmNuzX1dX5D61OH2nIB+qpm0Up3WVZ+K0zdDf0XQ2/77bP2Pi8u3CsaynqIj/lRHuZCjWB3XtdbWMuKas0bUl/cHQQbdgH294pJA91abtxIbXAWoUVtSPkqQykKHvAzVQ44twgrWpZH5RzUzcPdvcqr8aYOy3891sdd+2DdHg4jT+2Do4eQcud0SyR/s+HJ/WrCrz2m957k1mF9qlkSeiWYrjrqR6y4VIJ+qokpUzaCMakqs/GZj2QAsovm527N7OLnuffu7X98bgpRB5egFrH7Kw123RpEszJxkXGUVcRfnPqeWfUc8j7xVVSpm0sTdyqyYhUP1d9MkSAltLaEpQ2nPChIwlPsA5ClKVOBbRUySTcpSlK5XCUpShCUpShCUpShCUpShC/QSM4JGRg+yqRFvitS0TIffW+WhQKZEF0sOJ/u8PIfVSldHxsf2hdSxTyRG7HWWZ2Xc7dqzjht+6N+DSfkImtomkD1qdz+yrlO3s3snRzHf3LfZRj5Ue0RW1n9JKQR7jSlUX00YdYBNoq6d0dy72Cw+83rVd9aIv+udV3NR+Ul66LLR9QRzAHsqzN2W0NuJcRb2uMdSpSl59oUSPhSlWm00TdGpe+uqH6vPLkq1htqO4VxmWo6iMEsthvP6oFfRJJJJJJ6k0pUwaBoFWc9zu0br8pSlcrqlKUoQlKUoQlKUoQlKUoQlKUoQlKUoQlKUoQlKUoQv/9k=" alt="Italbatterie Logo" style="display:block;width:100%;height:100%;object-fit:contain;border-radius:6px;"/>
+    <span id="logoText" style="display:none">IB</span>
   </div>
-  <div class="header-info">
+  <div class="hdivider"></div>
+  <div class="hinfo">
     <h1>Italbatterie</h1>
     <p>Cedolino di Intervento</p>
   </div>
-  <div class="header-badge">Rev. 2024</div>
+  <div class="hright">
+    <div class="hbadge">Rev. 2025</div>
+    <button class="hbtn-setup" onclick="openSetup()">⚙ Configura</button>
+  </div>
 </header>
 
-<!-- MAIN -->
 <main class="main">
 
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-meta"><span>Completamento modulo</span><span id="pctLabel">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+  </div>
 
   <!-- META BAR -->
-  <div class="meta-bar">
-    <div class="field">
-      <label>N° Cedolino <span class="req">*</span></label>
-      <input type="text" id="numCedolino" placeholder="es. IB-2024-001" oninput="updateProgress()"/>
-    </div>
-    <div class="field">
-      <label>Data Intervento <span class="req">*</span></label>
-      <input type="date" id="dataIntervento" oninput="updateProgress()"/>
-    </div>
-    <div class="field">
-      <label>Tecnico Responsabile</label>
-      <input type="text" id="tecnico" placeholder="Nome tecnico"/>
-    </div>
+  <div class="metabar">
+    <div class="f"><label>N° Cedolino <span class="req">*</span></label><input type="text" id="numCed" placeholder="IB-2025-001" oninput="upd()"/></div>
+    <div class="f"><label>Data Intervento <span class="req">*</span></label><input type="date" id="dataInt" oninput="upd()"/></div>
+    <div class="f"><label>Tecnico Responsabile</label><input type="text" id="tecnico" placeholder="Nome tecnico"/></div>
   </div>
 
-  <!-- DATI CLIENTE -->
-  <div class="section-title"><span class="section-num">1</span> Dati Cliente</div>
+  <!-- 1. CLIENTE -->
+  <div class="stitle"><span class="snum">1</span><h2>Dati Cliente</h2></div>
   <div class="card">
-    <div class="grid-2" style="margin-bottom:20px">
-      <div class="field">
-        <label>Nome <span class="req">*</span></label>
-        <input type="text" id="nome" placeholder="Mario" oninput="updateProgress()"/>
-      </div>
-      <div class="field">
-        <label>Cognome <span class="req">*</span></label>
-        <input type="text" id="cognome" placeholder="Rossi" oninput="updateProgress()"/>
-      </div>
+    <div class="g2 g3m">
+      <div class="f"><label>Nome <span class="req">*</span></label><input type="text" id="nome" placeholder="Mario" oninput="upd()"/></div>
+      <div class="f"><label>Cognome <span class="req">*</span></label><input type="text" id="cognome" placeholder="Rossi" oninput="upd()"/></div>
     </div>
-    <div class="grid-3">
-      <div class="field">
-        <label>Azienda <span class="req">*</span></label>
-        <input type="text" id="azienda" placeholder="Nome Azienda Srl" oninput="updateProgress()"/>
-      </div>
-      <div class="field">
-        <label>Telefono</label>
-        <input type="tel" id="telefono" placeholder="+39 000 000 0000"/>
-      </div>
-      <div class="field">
-        <label>E-mail <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="email@azienda.it" oninput="updateProgress()"/>
-      </div>
+    <div class="g3 g3m">
+      <div class="f"><label>Azienda <span class="req">*</span></label><input type="text" id="azienda" placeholder="Azienda S.r.l." oninput="upd()"/></div>
+      <div class="f"><label>Telefono</label><input type="tel" id="telefono" placeholder="+39 000 000 0000"/></div>
+      <div class="f"><label>E-mail <span class="req">*</span></label><input type="email" id="email" placeholder="info@azienda.it" oninput="upd()"/></div>
     </div>
-    <div style="margin-top:20px">
-      <div class="field">
-        <label>Indirizzo</label>
-        <input type="text" id="indirizzo" placeholder="Via Roma 1, 20121 Milano MI"/>
-      </div>
-    </div>
+    <div class="f"><label>Indirizzo</label><input type="text" id="indirizzo" placeholder="Via Roma 1, 20121 Milano MI"/></div>
   </div>
 
-  <!-- TABELLA VEICOLI -->
-  <div class="section-title"><span class="section-num">2</span> Veicoli Aziendali</div>
-  <div class="card vehicle-section">
-    <div class="vehicle-table-wrap">
-      <table class="vehicle-table" id="vehicleTable">
-        <thead>
-          <tr>
-            <th class="th-mezzo">Mezzo</th>
-            <th class="th-targa">Targa</th>
-            <th class="th-eta">Età Batteria</th>
-            <th class="th-nota">Nota di Intervento</th>
-            <th class="th-esito">Esito Intervento</th>
-            <th class="th-del"></th>
-          </tr>
-        </thead>
-        <tbody id="vehicleBody">
-          <!-- rows inserted via JS -->
-        </tbody>
+  <!-- 2. VEICOLI -->
+  <div class="stitle"><span class="snum">2</span><h2>Veicoli Aziendali</h2></div>
+  <div class="card">
+    <div class="vtable-wrap">
+      <table class="vtable" id="vt">
+        <thead><tr>
+          <th>Mezzo</th><th>Targa</th><th>Età Batteria</th>
+          <th>Nota di Intervento</th><th>Esito Intervento</th><th></th>
+        </tr></thead>
+        <tbody id="vbody"></tbody>
       </table>
     </div>
-    <button class="add-row-btn" onclick="addVehicleRow()">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-      Aggiungi Veicolo
+    <button class="add-row-btn" onclick="addRow()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Aggiungi veicolo
     </button>
   </div>
 
-  <!-- FIRMA DIGITALE -->
-  <div class="section-title"><span class="section-num">3</span> Firma Cliente</div>
+  <!-- 3. FIRMA -->
+  <div class="stitle"><span class="snum">3</span><h2>Firma Cliente</h2></div>
   <div class="card">
-    <div class="sig-container">
-      <div class="sig-canvas-wrap" id="sigWrap">
+    <div class="sig-tabs">
+      <button class="sig-tab active" onclick="switchTab('draw',this)">✍&nbsp; Firma Gestuale</button>
+      <button class="sig-tab" onclick="switchTab('text',this)">Aa&nbsp; Firma Testuale</button>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="sig-panel active" id="panelDraw">
+      <div class="sig-wrap" id="sigWrap">
         <canvas id="sigCanvas"></canvas>
-        <div class="sig-placeholder" id="sigPlaceholder">
-          <svg width="36" height="36" fill="none" stroke="white" stroke-width="1.5" viewBox="0 0 24 24">
-            <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-          </svg>
+        <div class="sig-placeholder" id="sigPH">
+          <svg width="44" height="44" fill="none" stroke="#00475d" stroke-width="1.4" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
           <span>Firma qui con il dito o il mouse</span>
         </div>
       </div>
-      <button class="sig-clear-btn" onclick="clearSignature()">✕ Cancella Firma</button>
+      <div class="sig-actions"><button class="sig-clear" onclick="clearSig()">✕ Cancella firma</button></div>
+    </div>
+
+    <!-- TEXT -->
+    <div class="sig-panel" id="panelText">
+      <div class="tsig-wrap">
+        <div class="tsig-label">Digita il tuo nome per generare la firma</div>
+        <input class="tsig-input" type="text" id="tsigInput" placeholder="Mario Rossi" oninput="updTsig()" autocomplete="off"/>
+        <div class="tsig-preview-label">Anteprima firma</div>
+        <div class="tsig-preview" id="tsigPreview"></div>
+      </div>
     </div>
   </div>
 
-  <!-- NOTE -->
-  <div class="section-title"><span class="section-num">4</span> Note Aggiuntive</div>
+  <!-- 4. NOTE -->
+  <div class="stitle"><span class="snum">4</span><h2>Note Aggiuntive</h2></div>
   <div class="card">
-    <div class="field">
-      <label>Note generali</label>
-      <textarea id="noteGenerali" placeholder="Eventuali note, raccomandazioni o avvisi per il cliente..." style="min-height:100px"></textarea>
+    <div class="f"><label>Note, raccomandazioni o avvisi</label>
+      <textarea id="note" placeholder="Eventuali note tecniche, raccomandazioni o avvisi per il cliente…" style="min-height:96px"></textarea>
     </div>
   </div>
 
   <!-- AZIONI -->
-  <div class="divider"></div>
-  <div class="actions">
-    <button class="btn btn-primary" onclick="sendCedolino()">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-      Invia Cedolino
-    </button>
-    <button class="btn btn-export" onclick="exportExcel()">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v10m0 0l-3-3m3 3l3-3M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
-      Esporta Excel
-    </button>
-    <button class="btn btn-secondary" onclick="resetForm()">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-      Nuovo Cedolino
-    </button>
-    <button class="btn btn-secondary" onclick="openSetup()">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-      Configura
-    </button>
+  <div class="actions-card">
+    <div class="ac-left">
+      <h3>Pronto per l'invio?</h3>
+      <p>Salva sul Google Sheets e invia il cedolino via e-mail al cliente.</p>
+    </div>
+    <div class="ac-right">
+      <button class="btn btn-ghost" onclick="resetForm()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Nuovo
+      </button>
+      <button class="btn btn-export" onclick="exportExcel()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+        Esporta Excel
+      </button>
+      <button class="btn btn-primary" id="sendBtn" onclick="sendCedolino()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        <span id="sendLabel">Invia Cedolino</span>
+        <span class="spinner" id="sendSpin"></span>
+      </button>
+    </div>
+  </div>
+  <div class="form-footer">
+    Italbatterie · Sistema cedolini intervento<br/>
+    Dati trasmessi in modo sicuro tramite Google Apps Script · Google Sheets
   </div>
 </main>
 
 <!-- SETUP MODAL -->
-<div class="modal-overlay" id="setupModal">
+<div class="modal-ov" id="setupModal">
   <div class="modal">
-    <h2>⚙️ Configurazione</h2>
-    <p>Inserisci i parametri per il collegamento al Google Sheets e l'invio e-mail automatico.</p>
+    <div class="modal-hd">
+      <div class="modal-icon">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <h2>Configurazione</h2>
+    </div>
+    <p>Imposta il collegamento a Google Sheets e i parametri per l'invio automatico delle e-mail ai clienti.</p>
     <div class="setup-note">
-      <strong>Come configurare Google Sheets:</strong><br/>
-      1. Crea un Google Sheet → Strumenti → <code>App Script</code><br/>
-      2. Incolla lo script fornito nel file <code>README_SETUP.txt</code><br/>
-      3. Distribuisci come Web App e copia qui l'URL generato.<br/><br/>
-      <strong>Logo:</strong> Inserisci il percorso o URL del logo aziendale.
+      <strong>Come collegare Google Sheets (operazione una tantum):</strong><br/>
+      1. Apri il tuo Google Sheet → <code>Estensioni</code> → <code>Apps Script</code><br/>
+      2. Incolla il codice dal commento <code>README_SETUP</code> in fondo a questo file HTML<br/>
+      3. Clicca <code>Distribuisci</code> → <code>Nuova distribuzione</code> → <code>Web App</code><br/>
+      &nbsp;&nbsp;&nbsp;Esegui come: <em>me stesso</em> · Accesso: <em>chiunque</em><br/>
+      4. Autorizza e copia qui l'URL generato.<br/><br/>
+      <strong>Logo:</strong> posiziona <code>logo.png</code> accanto al file HTML e scrivi <code>logo.png</code>.
     </div>
-    <div class="field">
-      <label>Google Apps Script URL (Web App)</label>
-      <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec"/>
-    </div>
-    <div class="field">
-      <label>E-mail Mittente (Italbatterie)</label>
-      <input type="email" id="senderEmail" placeholder="info@italbatterie.it"/>
-    </div>
-    <div class="field">
-      <label>URL o Percorso Logo Aziendale</label>
-      <input type="text" id="logoUrl" placeholder="https://... oppure logo.png"/>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeSetup()">Annulla</button>
-      <button class="btn btn-primary" onclick="saveSetup()">Salva Configurazione</button>
+    <div class="f"><label>Google Apps Script URL</label><input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec"/></div>
+    <div class="f" style="margin-top:14px"><label>E-mail Italbatterie (mittente)</label><input type="email" id="senderEmail" placeholder="info@italbatterie.it"/></div>
+    <div class="f" style="margin-top:14px"><label>URL o percorso Logo</label><input type="text" id="logoUrl" placeholder="logo.png  oppure  https://..."/></div>
+    <div class="modal-ftr">
+      <button class="mbtn-cancel" onclick="closeSetup()">Annulla</button>
+      <button class="mbtn-primary" onclick="saveSetup()">Salva</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg"></span></div>
+<div id="toast"><span class="tdot"></span><span id="toastMsg"></span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
-let config = JSON.parse(localStorage.getItem('ib_config') || '{}');
+/* ─── CONFIG ─────────────────────────────────────────────── */
+let cfg = {};
+try { cfg = JSON.parse(localStorage.getItem('ib_cfg') || '{}'); } catch(e){}
 
-function loadConfig() {
-  if (config.gasUrl) document.getElementById('gasUrl').value = config.gasUrl;
-  if (config.senderEmail) document.getElementById('senderEmail').value = config.senderEmail;
-  if (config.logoUrl) {
-    document.getElementById('logoUrl').value = config.logoUrl;
-    applyLogo(config.logoUrl);
-  }
+function loadCfg() {
+  if (cfg.gasUrl)     document.getElementById('gasUrl').value     = cfg.gasUrl;
+  if (cfg.senderEmail)document.getElementById('senderEmail').value = cfg.senderEmail;
+  if (cfg.logoUrl)  { document.getElementById('logoUrl').value    = cfg.logoUrl; applyLogo(cfg.logoUrl); }
 }
 function applyLogo(url) {
-  const img = document.getElementById('logoImg');
-  const txt = document.getElementById('logoText');
+  if (!url) return;
+  const img = document.getElementById('logoImg'), txt = document.getElementById('logoText');
   img.src = url;
-  img.onload = () => { img.classList.add('loaded'); txt.style.display = 'none'; };
+  img.onload  = () => { img.classList.add('loaded'); txt.style.display = 'none'; };
   img.onerror = () => { img.classList.remove('loaded'); txt.style.display = 'block'; };
 }
-
-// ─── SETUP MODAL ──────────────────────────────────────────
-function openSetup() { document.getElementById('setupModal').classList.add('open'); loadConfig(); }
+function openSetup()  { loadCfg(); document.getElementById('setupModal').classList.add('open'); }
 function closeSetup() { document.getElementById('setupModal').classList.remove('open'); }
-function saveSetup() {
-  config = {
-    gasUrl: document.getElementById('gasUrl').value.trim(),
-    senderEmail: document.getElementById('senderEmail').value.trim(),
-    logoUrl: document.getElementById('logoUrl').value.trim()
-  };
-  localStorage.setItem('ib_config', JSON.stringify(config));
-  if (config.logoUrl) applyLogo(config.logoUrl);
-  closeSetup();
-  toast('Configurazione salvata', 'success');
+function saveSetup()  {
+  cfg = { gasUrl: document.getElementById('gasUrl').value.trim(),
+          senderEmail: document.getElementById('senderEmail').value.trim(),
+          logoUrl: document.getElementById('logoUrl').value.trim() };
+  try { localStorage.setItem('ib_cfg', JSON.stringify(cfg)); } catch(e){}
+  // Logo is embedded directly
+  if (cfg.logoUrl) applyLogo(cfg.logoUrl);
+  closeSetup(); toast('Configurazione salvata ✓', 'success');
 }
 
-// ─── VEHICLE TABLE ────────────────────────────────────────
-let rowCount = 0;
-function addVehicleRow(data = {}) {
-  rowCount++;
-  const id = rowCount;
-  const tr = document.createElement('tr');
-  const esiti = ['','Batteria sostituita','Batteria caricata','Batteria non riparabile','Controllo eseguito','Collaudo OK','Intervento rimandato'];
-  const esitoOptions = esiti.map(e => `<option value="${e}" ${data.esito===e?'selected':''}>${e||'— Seleziona —'}</option>`).join('');
-  tr.innerHTML = `
-    <td><input type="text" placeholder="es. Furgone, Auto…" value="${data.mezzo||''}"/></td>
-    <td><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="${data.targa||''}"/></td>
-    <td><input type="text" placeholder="es. 2 anni" value="${data.eta||''}"/></td>
-    <td><textarea placeholder="Descrizione intervento…">${data.nota||''}</textarea></td>
-    <td><select>${esitoOptions}</select></td>
-    <td><button class="row-del-btn" onclick="deleteRow(this)" title="Elimina riga">✕</button></td>
-  `;
-  document.getElementById('vehicleBody').appendChild(tr);
-  updateProgress();
+/* ─── SIG TABS ───────────────────────────────────────────── */
+let activeTab = 'draw';
+function switchTab(mode, btn) {
+  activeTab = mode;
+  document.querySelectorAll('.sig-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sig-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(mode === 'draw' ? 'panelDraw' : 'panelText').classList.add('active');
+  upd();
 }
-function deleteRow(btn) {
-  btn.closest('tr').remove();
-  updateProgress();
+function updTsig() {
+  document.getElementById('tsigPreview').textContent = document.getElementById('tsigInput').value;
+  upd();
+}
+
+/* ─── CANVAS SIGNATURE ───────────────────────────────────── */
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, hasSig = false;
+
+function resizeCv() {
+  const wrap = document.getElementById('sigWrap');
+  const r = window.devicePixelRatio || 1;
+  const w = wrap.clientWidth, h = 175;
+  canvas.width = w*r; canvas.height = h*r;
+  canvas.style.width = w+'px'; canvas.style.height = h+'px';
+  ctx.scale(r,r);
+  ctx.strokeStyle = '#00475d'; ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+}
+resizeCv();
+window.addEventListener('resize', resizeCv);
+
+function gp(e) { const b=canvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return {x:s.clientX-b.left,y:s.clientY-b.top}; }
+canvas.addEventListener('mousedown',  e => { drawing=true; const p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove',  e => { if(!drawing)return; const p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); });
+canvas.addEventListener('mouseup',    () => drawing=false);
+canvas.addEventListener('mouseleave', () => drawing=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing)return; const p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); }, {passive:false});
+canvas.addEventListener('touchend',   () => drawing=false);
+
+function setSig(s) {
+  hasSig = s;
+  document.getElementById('sigPH').style.opacity = s ? '0' : '1';
+  document.getElementById('sigWrap').classList.toggle('has-sig', s);
+  upd();
+}
+function clearSig() {
+  const r = window.devicePixelRatio||1;
+  ctx.clearRect(0,0,canvas.width/r,canvas.height/r);
+  setSig(false);
+}
+function getSigData() {
+  if (activeTab === 'draw') return hasSig ? canvas.toDataURL('image/png') : null;
+  const t = document.getElementById('tsigInput').value.trim();
+  return t ? 'TEXT:'+t : null;
+}
+function sigOk() {
+  if (activeTab === 'draw') return hasSig;
+  return document.getElementById('tsigInput').value.trim() !== '';
+}
+
+/* ─── VEHICLE TABLE ──────────────────────────────────────── */
+let rowN = 0;
+const ESITI = ['','Batteria sostituita','Batteria caricata','Batteria non riparabile',
+               'Controllo diagnostico eseguito','Collaudo OK','Intervento rimandato','Manutenzione programmata'];
+function addRow(d={}) {
+  rowN++;
+  const tr = document.createElement('tr');
+  const opts = ESITI.map(e=>`<option value="${e}" ${d.esito===e?'selected':''}>${e||'— Seleziona esito —'}</option>`).join('');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Furgone, Auto, Muletto…" value="${d.mezzo||''}"/></td>
+    <td><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="${d.targa||''}"/></td>
+    <td><input type="text" placeholder="es. 18 mesi" value="${d.eta||''}"/></td>
+    <td><textarea placeholder="Descrizione intervento…">${d.nota||''}</textarea></td>
+    <td><select>${opts}</select></td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove();upd()" title="Elimina">✕</button></td>`;
+  document.getElementById('vbody').appendChild(tr);
+  upd();
 }
 function getVehicles() {
-  const rows = document.querySelectorAll('#vehicleBody tr');
-  return Array.from(rows).map(tr => {
-    const inputs = tr.querySelectorAll('input, textarea, select');
-    return {
-      mezzo: inputs[0].value.trim(),
-      targa: inputs[1].value.trim().toUpperCase(),
-      eta: inputs[2].value.trim(),
-      nota: inputs[3].value.trim(),
-      esito: inputs[4].value.trim()
-    };
+  return Array.from(document.querySelectorAll('#vbody tr')).map(tr => {
+    const i = tr.querySelectorAll('input,textarea,select');
+    return { mezzo:i[0].value.trim(), targa:i[1].value.trim().toUpperCase(),
+             eta:i[2].value.trim(), nota:i[3].value.trim(), esito:i[4].value.trim() };
   });
 }
 
-// ─── SIGNATURE ────────────────────────────────────────────
-const canvas = document.getElementById('sigCanvas');
-const ctx = canvas.getContext('2d');
-let isDrawing = false, hasSig = false;
-
-function resizeCanvas() {
-  const wrap = document.getElementById('sigWrap');
-  const ratio = window.devicePixelRatio || 1;
-  const w = wrap.clientWidth;
-  const h = 160;
-  canvas.width = w * ratio;
-  canvas.height = h * ratio;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.scale(ratio, ratio);
-  ctx.strokeStyle = '#E8E8E8';
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return { x: src.clientX - r.left, y: src.clientY - r.top };
-}
-canvas.addEventListener('mousedown', e => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-canvas.addEventListener('mousemove', e => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); setSigState(true); });
-canvas.addEventListener('mouseup', () => isDrawing = false);
-canvas.addEventListener('mouseleave', () => isDrawing = false);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive:false});
-canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); setSigState(true); }, {passive:false});
-canvas.addEventListener('touchend', () => isDrawing = false);
-
-function setSigState(state) {
-  hasSig = state;
-  document.getElementById('sigPlaceholder').style.opacity = state ? '0' : '1';
-  document.getElementById('sigWrap').classList.toggle('has-sig', state);
-  updateProgress();
-}
-function clearSignature() {
-  const ratio = window.devicePixelRatio || 1;
-  ctx.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
-  setSigState(false);
-}
-function getSignatureDataURL() {
-  return hasSig ? canvas.toDataURL('image/png') : null;
+/* ─── PROGRESS ───────────────────────────────────────────── */
+function upd() {
+  const req = ['nome','cognome','azienda','email','numCed','dataInt'];
+  const filled = req.filter(id => document.getElementById(id).value.trim()).length;
+  const v = document.querySelectorAll('#vbody tr').length > 0 ? 1 : 0;
+  const s = sigOk() ? 1 : 0;
+  const total = req.length + 1 + 1;
+  const pct = Math.min(100, Math.round((filled+v+s)/total*100));
+  document.getElementById('pFill').style.width = pct+'%';
+  document.getElementById('pctLabel').textContent = pct+'%';
 }
 
-// ─── PROGRESS ─────────────────────────────────────────────
-function updateProgress() {
-  const fields = ['nome','cognome','azienda','email','numCedolino','dataIntervento'];
-  const filled = fields.filter(id => document.getElementById(id).value.trim() !== '').length;
-  const vCount = document.querySelectorAll('#vehicleBody tr').length;
-  const sigOk = hasSig ? 1 : 0;
-  const total = fields.length + 1 + 1; // fields + vehicles>0 + sig
-  const score = filled + (vCount > 0 ? 1 : 0) + sigOk;
-  document.getElementById('progressFill').style.width = Math.min(100, Math.round(score / total * 100)) + '%';
-}
-
-// ─── COLLECT DATA ─────────────────────────────────────────
-function collectData() {
+/* ─── COLLECT ────────────────────────────────────────────── */
+function collect() {
   return {
-    numCedolino: document.getElementById('numCedolino').value.trim(),
-    dataIntervento: document.getElementById('dataIntervento').value,
+    numCedolino: document.getElementById('numCed').value.trim(),
+    dataIntervento: document.getElementById('dataInt').value,
     tecnico: document.getElementById('tecnico').value.trim(),
     nome: document.getElementById('nome').value.trim(),
     cognome: document.getElementById('cognome').value.trim(),
@@ -815,184 +644,186 @@ function collectData() {
     indirizzo: document.getElementById('indirizzo').value.trim(),
     telefono: document.getElementById('telefono').value.trim(),
     email: document.getElementById('email').value.trim(),
-    noteGenerali: document.getElementById('noteGenerali').value.trim(),
+    note: document.getElementById('note').value.trim(),
     veicoli: getVehicles(),
-    firmaDataURL: getSignatureDataURL(),
+    firma: getSigData(),
     timestamp: new Date().toISOString()
   };
 }
-
-function validate(data) {
-  if (!data.nome) return 'Inserisci il nome del cliente.';
-  if (!data.cognome) return 'Inserisci il cognome del cliente.';
-  if (!data.azienda) return 'Inserisci il nome dell\'azienda.';
-  if (!data.email) return 'Inserisci l\'e-mail del cliente.';
-  if (!data.numCedolino) return 'Inserisci il numero cedolino.';
-  if (!data.dataIntervento) return 'Inserisci la data dell\'intervento.';
-  if (data.veicoli.length === 0) return 'Aggiungi almeno un veicolo.';
+function validate(d) {
+  if (!d.nome)         return 'Inserisci il nome del cliente.';
+  if (!d.cognome)      return 'Inserisci il cognome del cliente.';
+  if (!d.azienda)      return 'Inserisci il nome dell\'azienda.';
+  if (!d.email)        return 'Inserisci l\'e-mail del cliente.';
+  if (!d.numCedolino)  return 'Inserisci il numero cedolino.';
+  if (!d.dataIntervento) return 'Inserisci la data dell\'intervento.';
+  if (d.veicoli.length === 0) return 'Aggiungi almeno un veicolo.';
   return null;
 }
 
-// ─── SEND CEDOLINO ────────────────────────────────────────
+/* ─── SEND ───────────────────────────────────────────────── */
 async function sendCedolino() {
-  const data = collectData();
-  const err = validate(data);
+  const d = collect();
+  const err = validate(d);
   if (err) { toast(err, 'error'); return; }
-  if (!config.gasUrl) { toast('Configura prima lo script Google Apps Script nelle impostazioni.', 'error'); openSetup(); return; }
-
-  toast('Invio in corso…', 'info');
+  if (!cfg.gasUrl) { toast('Configura prima l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
+  document.getElementById('sendLabel').textContent = 'Invio…';
+  document.getElementById('sendSpin').classList.add('show');
+  document.getElementById('sendBtn').disabled = true;
   try {
-    const resp = await fetch(config.gasUrl, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ action: 'submitCedolino', ...data })
+    const resp = await fetch(cfg.gasUrl, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'submitCedolino', ...d})
     });
-    const result = await resp.json();
-    if (result.success) {
-      toast('Cedolino inviato con successo a ' + data.email + '!', 'success');
-    } else {
-      toast('Errore: ' + (result.message || 'risposta non valida'), 'error');
-    }
+    const res = await resp.json();
+    if (res.success) toast('Cedolino inviato a ' + d.email + ' ✓', 'success');
+    else toast('Errore: ' + (res.message||'risposta non valida'), 'error');
   } catch(e) {
     toast('Errore di connessione. Verifica l\'URL dello script.', 'error');
   }
+  document.getElementById('sendLabel').textContent = 'Invia Cedolino';
+  document.getElementById('sendSpin').classList.remove('show');
+  document.getElementById('sendBtn').disabled = false;
 }
 
-// ─── EXPORT EXCEL ─────────────────────────────────────────
+/* ─── EXPORT EXCEL ───────────────────────────────────────── */
 function exportExcel() {
-  const data = collectData();
+  const d = collect();
   const wb = XLSX.utils.book_new();
-
-  // Sheet 1: Dati Cliente
-  const clienteData = [
-    ['ITALBATTERIE — CEDOLINO INTERVENTO'],
-    [],
-    ['N° Cedolino', data.numCedolino],
-    ['Data', data.dataIntervento],
-    ['Tecnico', data.tecnico],
-    [],
+  // Sheet: Cliente
+  const ws1 = XLSX.utils.aoa_to_sheet([
+    ['ITALBATTERIE — CEDOLINO INTERVENTO'],[], 
+    ['N° Cedolino', d.numCedolino], ['Data', d.dataIntervento], ['Tecnico', d.tecnico],[],
     ['DATI CLIENTE'],
-    ['Nome', data.nome],
-    ['Cognome', data.cognome],
-    ['Azienda', data.azienda],
-    ['Indirizzo', data.indirizzo],
-    ['Telefono', data.telefono],
-    ['E-mail', data.email],
-    [],
-    ['NOTE', data.noteGenerali]
-  ];
-  const wsCliente = XLSX.utils.aoa_to_sheet(clienteData);
-  wsCliente['!cols'] = [{wch:20},{wch:40}];
-  XLSX.utils.book_append_sheet(wb, wsCliente, 'Dati Cliente');
-
-  // Sheet 2: Veicoli
-  const vHeader = [['Mezzo','Targa','Età Batteria','Nota di Intervento','Esito Intervento']];
-  const vRows = data.veicoli.map(v => [v.mezzo, v.targa, v.eta, v.nota, v.esito]);
-  const wsVeicoli = XLSX.utils.aoa_to_sheet([...vHeader, ...vRows]);
-  wsVeicoli['!cols'] = [{wch:16},{wch:12},{wch:14},{wch:40},{wch:25}];
-  XLSX.utils.book_append_sheet(wb, wsVeicoli, 'Veicoli');
-
-  const filename = `Italbatterie_${data.azienda.replace(/\s/g,'_')}_${data.dataIntervento || 'cedolino'}.xlsx`;
-  XLSX.writeFile(wb, filename);
-  toast('File Excel scaricato: ' + filename, 'success');
+    ['Nome', d.nome], ['Cognome', d.cognome], ['Azienda', d.azienda],
+    ['Indirizzo', d.indirizzo], ['Telefono', d.telefono], ['E-mail', d.email],[],['Note', d.note]
+  ]);
+  ws1['!cols'] = [{wch:18},{wch:42}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Dati Cliente');
+  // Sheet: Veicoli
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['Mezzo','Targa','Età Batteria','Nota di Intervento','Esito Intervento'],
+    ...d.veicoli.map(v=>[v.mezzo,v.targa,v.eta,v.nota,v.esito])
+  ]);
+  ws2['!cols'] = [{wch:16},{wch:12},{wch:14},{wch:42},{wch:28}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Veicoli');
+  const fn = `Italbatterie_${d.azienda.replace(/\s+/g,'_')}_${d.dataIntervento||'cedolino'}.xlsx`;
+  XLSX.writeFile(wb, fn);
+  toast('File Excel scaricato: ' + fn, 'success');
 }
 
-// ─── RESET ────────────────────────────────────────────────
+/* ─── RESET ──────────────────────────────────────────────── */
 function resetForm() {
-  if (!confirm('Vuoi davvero azzerare il modulo? I dati non salvati verranno persi.')) return;
-  ['numCedolino','dataIntervento','tecnico','nome','cognome','azienda','indirizzo','telefono','email','noteGenerali'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('vehicleBody').innerHTML = '';
-  rowCount = 0;
-  clearSignature();
-  updateProgress();
-  toast('Modulo azzerato', 'info');
+  if (!confirm('Azzerare il modulo? I dati non salvati verranno persi.')) return;
+  ['nome','cognome','azienda','indirizzo','telefono','email','tecnico','note'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('vbody').innerHTML = '';
+  rowN = 0;
+  clearSig();
+  document.getElementById('tsigInput').value = '';
+  document.getElementById('tsigPreview').textContent = '';
+  // Auto new number
+  const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
+  localStorage.setItem('ib_ctr', cnt);
+  const y = new Date().getFullYear();
+  document.getElementById('numCed').value = `IB-${y}-${String(cnt).padStart(3,'0')}`;
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  addRow(); upd();
+  toast('Nuovo cedolino pronto', 'info');
 }
 
-// ─── TOAST ────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, type = 'success') {
+/* ─── TOAST ──────────────────────────────────────────────── */
+let tTimer;
+function toast(msg, type='info') {
   const t = document.getElementById('toast');
-  const icon = {success:'✓', error:'✕', info:'ℹ'};
   document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastIcon').textContent = icon[type] || '●';
-  t.className = type;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+  t.className = type; t.classList.add('show');
+  clearTimeout(tTimer); tTimer = setTimeout(()=>t.classList.remove('show'), 4200);
 }
 
-// ─── INIT ─────────────────────────────────────────────────
+/* ─── INIT ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
-  loadConfig();
-  addVehicleRow();
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('dataIntervento').value = today;
-  // Auto-generate cedolino number
-  const counter = (parseInt(localStorage.getItem('ib_counter') || '0') + 1);
-  localStorage.setItem('ib_counter', counter);
-  const year = new Date().getFullYear();
-  document.getElementById('numCedolino').value = `IB-${year}-${String(counter).padStart(3,'0')}`;
-  updateProgress();
+  try { cfg = JSON.parse(localStorage.getItem('ib_cfg')||'{}'); } catch(e){}
+  // Logo is embedded directly
+  if (cfg.logoUrl) applyLogo(cfg.logoUrl);
+  const cnt = (parseInt(localStorage.getItem('ib_ctr')||'0')+1);
+  localStorage.setItem('ib_ctr', cnt);
+  const y = new Date().getFullYear();
+  document.getElementById('numCed').value = `IB-${y}-${String(cnt).padStart(3,'0')}`;
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  addRow(); upd();
 });
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════
-  README_SETUP — GOOGLE APPS SCRIPT DA INCOLLARE NEL TUO SHEET
-  ═══════════════════════════════════════════════════════════
-  1. Apri il tuo Google Sheet su drive.google.com
-  2. Vai su Estensioni → Apps Script
-  3. Incolla il codice qui sotto (sostituisci tutto)
-  4. Salva, poi Distribuisci → Nuova distribuzione → Web App
-     - Esegui come: me stesso
-     - Accesso: chiunque
-  5. Autorizza e copia l'URL generato nelle impostazioni del modulo
+<!--
+════════════════════════════════════════════════════════════════════════════
+  README_SETUP — CODICE GOOGLE APPS SCRIPT
+  Incolla tutto quanto segue nell'editor Apps Script del tuo Google Sheet.
+════════════════════════════════════════════════════════════════════════════
 
-─────────────────────────────────────────────────────────────
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    if (data.action !== 'submitCedolino') return resp({success:false,message:'Azione non valida'});
+    if (data.action !== 'submitCedolino')
+      return out({success:false, message:'Azione sconosciuta'});
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // ── Foglio riepilogo clienti ──
-    var shClients = ss.getSheetByName('Clienti') || ss.insertSheet('Clienti');
-    if (shClients.getLastRow() === 0) {
-      shClients.appendRow(['Timestamp','N° Cedolino','Data','Tecnico','Nome','Cognome','Azienda','Indirizzo','Telefono','Email','Note']);
+    // ── Foglio CLIENTI ──────────────────────────────────────────────────
+    var shC = ss.getSheetByName('Clienti') || ss.insertSheet('Clienti');
+    if (shC.getLastRow() === 0) {
+      shC.appendRow(['Timestamp','N° Cedolino','Data','Tecnico',
+                     'Nome','Cognome','Azienda','Indirizzo','Telefono','Email','Note']);
+      shC.getRange(1,1,1,11).setFontWeight('bold')
+         .setBackground('#00475d').setFontColor('#ffffff');
     }
-    shClients.appendRow([data.timestamp, data.numCedolino, data.dataIntervento, data.tecnico,
-      data.nome, data.cognome, data.azienda, data.indirizzo, data.telefono, data.email, data.noteGenerali]);
+    shC.appendRow([data.timestamp, data.numCedolino, data.dataIntervento, data.tecnico,
+                   data.nome, data.cognome, data.azienda, data.indirizzo,
+                   data.telefono, data.email, data.note]);
 
-    // ── Foglio veicoli ──
-    var shVeicoli = ss.getSheetByName('Veicoli') || ss.insertSheet('Veicoli');
-    if (shVeicoli.getLastRow() === 0) {
-      shVeicoli.appendRow(['N° Cedolino','Azienda','Data','Mezzo','Targa','Età Batteria','Nota Intervento','Esito']);
+    // ── Foglio VEICOLI ──────────────────────────────────────────────────
+    var shV = ss.getSheetByName('Veicoli') || ss.insertSheet('Veicoli');
+    if (shV.getLastRow() === 0) {
+      shV.appendRow(['N° Cedolino','Azienda','Data Intervento',
+                     'Mezzo','Targa','Età Batteria','Nota Intervento','Esito']);
+      shV.getRange(1,1,1,8).setFontWeight('bold')
+         .setBackground('#00475d').setFontColor('#ffffff');
     }
     (data.veicoli || []).forEach(function(v) {
-      shVeicoli.appendRow([data.numCedolino, data.azienda, data.dataIntervento,
-        v.mezzo, v.targa, v.eta, v.nota, v.esito]);
+      shV.appendRow([data.numCedolino, data.azienda, data.dataIntervento,
+                     v.mezzo, v.targa, v.eta, v.nota, v.esito]);
     });
 
-    // ── Invio email al cliente ──
-    var subject = 'Cedolino Intervento Italbatterie — ' + data.numCedolino;
-    var body = 'Gentile ' + data.nome + ' ' + data.cognome + ',\n\n';
-    body += 'In allegato trovate il cedolino di intervento n° ' + data.numCedolino + ' del ' + data.dataIntervento + '.\n\n';
-    body += 'VEICOLI TRATTATI:\n';
+    // ── Invio E-MAIL al cliente ─────────────────────────────────────────
+    var sub  = 'Cedolino Intervento Italbatterie n° ' + data.numCedolino;
+    var body = 'Gentile ' + data.nome + ' ' + data.cognome + ',\n\n'
+             + 'Le trasmettiamo il cedolino di intervento n° ' + data.numCedolino
+             + ' del ' + data.dataIntervento + '.\n\n'
+             + 'VEICOLI TRATTATI:\n';
     (data.veicoli || []).forEach(function(v, i) {
-      body += (i+1) + '. ' + v.mezzo + ' (' + v.targa + ') — ' + v.esito + '\n';
+      body += (i+1) + '. ' + v.mezzo + ' — Targa: ' + v.targa + '\n';
+      body += '   Età batteria: ' + v.eta + '\n';
+      body += '   Esito: ' + v.esito + '\n';
       if (v.nota) body += '   Nota: ' + v.nota + '\n';
+      body += '\n';
     });
-    if (data.noteGenerali) body += '\nNOTE: ' + data.noteGenerali + '\n';
-    body += '\nCordiali saluti,\nItalbatterie\n';
-    MailApp.sendEmail({ to: data.email, subject: subject, body: body });
+    if (data.note) body += 'NOTE GENERALI:\n' + data.note + '\n\n';
+    body += 'Cordiali saluti,\nItalbatterie\n';
 
-    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+    MailApp.sendEmail({ to: data.email, subject: sub, body: body });
+
+    return out({success:true});
   } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({success:false,message:err.toString()})).setMimeType(ContentService.MimeType.JSON);
+    return out({success:false, message:err.toString()});
   }
 }
-─────────────────────────────────────────────────────────────
--->
 
+function out(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+════════════════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>

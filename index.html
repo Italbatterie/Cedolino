@@ -535,7 +535,7 @@
       4. Autorizza e copia qui l'URL generato.<br/><br/>
       <strong>Logo:</strong> posiziona <code>logo.png</code> accanto al file HTML e scrivi <code>logo.png</code>.
     </div>
-    <div class="f"><label>Google Apps Script URL</label><input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbz6tjbJRJtaRV90SOe0ea0qfRgEAd-Hauf5pbzWpm6hx247q62wu9dL47nQDUDR7WnyPg/exec"/></div>
+    <div class="f"><label>Google Apps Script URL</label><input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec"/></div>
     <div class="f" style="margin-top:14px"><label>E-mail Italbatterie (mittente)</label><input type="email" id="senderEmail" placeholder="info@italbatterie.it"/></div>
     <div class="f" style="margin-top:14px"><label>URL o percorso Logo</label><input type="text" id="logoUrl" placeholder="logo.png  oppure  https://..."/></div>
     <div class="modal-ftr">
@@ -550,7 +550,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ─── CONFIG ─────────────────────────────────────────────── */
-let cfg = { gasUrl: 'https://script.google.com/macros/s/AKfycbz6tjbJRJtaRV90SOe0ea0qfRgEAd-Hauf5pbzWpm6hx247q62wu9dL47nQDUDR7WnyPg/exec' };
+let cfg = { gasUrl: 'https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec' };
 try {
   const saved = JSON.parse(localStorage.getItem('ib_cfg') || '{}');
   cfg = Object.assign(cfg, saved); // saved sovrascrive solo i campi presenti

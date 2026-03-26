@@ -278,8 +278,8 @@
   <div class="stitle"><span class="snum">1</span><h2>Dati Cliente</h2></div>
   <div class="card">
     <div class="g2">
-      <div class="f"><label>Nome <span class="req">*</span></label><input type="text" id="nome" placeholder="Mario" oninput="upd()"/></div>
-      <div class="f"><label>Cognome <span class="req">*</span></label><input type="text" id="cognome" placeholder="Rossi" oninput="upd()"/></div>
+      <div class="f"><label>Nome</label><input type="text" id="nome" placeholder="Mario" oninput="upd()"/></div>
+      <div class="f"><label>Cognome</label><input type="text" id="cognome" placeholder="Rossi" oninput="upd()"/></div>
     </div>
     <div class="g3">
       <div class="f"><label>Azienda <span class="req">*</span></label><input type="text" id="azienda" placeholder="Azienda S.r.l." oninput="upd()"/></div>
@@ -594,8 +594,6 @@ function collect() {
   };
 }
 function validate(d) {
-  if (!d.nome)           return 'Inserisci il nome del cliente.';
-  if (!d.cognome)        return 'Inserisci il cognome del cliente.';
   if (!d.azienda)        return "Inserisci il nome dell'azienda.";
   if (!d.email)          return "Inserisci l'e-mail del cliente.";
   if (!d.numCedolino)    return 'Inserisci il numero cedolino.';

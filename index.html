@@ -252,6 +252,8 @@
     .pdf-btn-close:hover{background:rgba(255,255,255,.25)}
     .pdf-btn-send{background:#fff;color:var(--blue)}
     .pdf-btn-send:hover{background:var(--blue-pale)}
+    .pdf-btn-share{background:rgba(46,204,113,.2);border:1.5px solid rgba(46,204,113,.5);color:#2ecc71}
+    .pdf-btn-share:hover{background:rgba(46,204,113,.35)}
     .pdf-btn-dl{background:rgba(255,220,50,.2);border:1.5px solid rgba(255,220,50,.5);color:#ffe566}
     .pdf-btn-dl:hover{background:rgba(255,220,50,.35)}
     .pdf-frame-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;
@@ -288,9 +290,13 @@
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       Scarica PDF
     </button>
-    <button class="pdf-btn pdf-btn-send" onclick="sendFromPreview()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-      Invia Cedolino
+    <button class="pdf-btn pdf-btn-send" onclick="allegaEInvia()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      Allega e Invia
+    </button>
+    <button class="pdf-btn pdf-btn-share" id="btnShare" onclick="condividiPDF()" style="display:none">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Condividi
     </button>
     <button class="pdf-btn pdf-btn-close" onclick="closePDFPreview()">
       ✕ Chiudi
@@ -854,9 +860,54 @@ function downloadPDF() {
   var d = collect();
   _lastPdfDoc.save('Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf');
 }
+function allegaEInvia() {
+  if (!_lastPdfDoc) { toast('Genera prima l\'anteprima PDF.', 'error'); return; }
+  var d    = collect();
+  var nome = (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_');
+
+  // 1. Scarica automaticamente il PDF
+  _lastPdfDoc.save('Cedolino_' + nome + '.pdf');
+
+  // 2. Dopo mezzo secondo apre il client mail con oggetto e corpo precompilati
+  setTimeout(function() {
+    var subject = encodeURIComponent('Cedolino Intervento Italbatterie n\u00b0 ' + (d.numCedolino||''));
+    var body    = encodeURIComponent(
+      'Gentile cliente,\n\n' +
+      'alleghiamo l\'esito dell\'intervento n\u00b0 ' + (d.numCedolino||'') +
+      ' effettuato in data ' + (d.dataIntervento||'') + '.\n\n' +
+      'In allegato trova il cedolino completo in formato PDF\n' +
+      '(file: Cedolino_' + nome + '.pdf).\n\n' +
+      'Cordiali saluti,\nItalbatterie\nLa tua strada, la nostra energia'
+    );
+    var to = encodeURIComponent(d.email || '');
+    window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
+  }, 600);
+
+  toast('PDF scaricato — allega il file alla mail che si apre!', 'success');
+}
+
+function condividiPDF() {
+  if (!_lastPdfDoc) { toast('Genera prima l\'anteprima PDF.', 'error'); return; }
+  var d    = collect();
+  var nome = 'Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf';
+  var pdfBytes = _lastPdfDoc.output('arraybuffer');
+  var file     = new File([pdfBytes], nome, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      title:   'Cedolino ' + (d.numCedolino||''),
+      text:    'Cedolino intervento Italbatterie n\u00b0 ' + (d.numCedolino||''),
+      files:   [file]
+    }).catch(function(e){ if(e.name !== 'AbortError') toast('Condivisione annullata.', 'info'); });
+  } else {
+    // Fallback: download
+    _lastPdfDoc.save(nome);
+    toast('Condivisione non disponibile — PDF scaricato.', 'info');
+  }
+}
+
+// Mantenuta per compatibilità
 function sendFromPreview() {
-  closePDFPreview();
-  gasPost('submitCedolino');
+  allegaEInvia();
 }
 
 // ─── INVIO ───────────────────────────────────────────────────────────
@@ -1001,6 +1052,10 @@ function toast(msg, type) {
 document.addEventListener('DOMContentLoaded', function() {
   try { var s=JSON.parse(localStorage.getItem('ib_cfg')||'{}'); if(s.gasUrl) cfg.gasUrl=s.gasUrl; if(s.senderEmail) cfg.senderEmail=s.senderEmail; } catch(e){}
   document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  // Mostra "Condividi" solo se il browser supporta Web Share API con file
+  if (navigator.share && navigator.canShare) {
+    document.getElementById('btnShare').style.display = 'inline-flex';
+  }
   addRow();
   generaNumero();
   upd();

@@ -6,6 +6,7 @@
   <title>Italbatterie — Cedolino Intervento</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -290,7 +291,7 @@
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       Scarica PDF
     </button>
-    <button class="pdf-btn pdf-btn-send" onclick="allegaEInvia()">
+    <button class="pdf-btn pdf-btn-send" id="btnAllegaInvia" onclick="allegaEInvia()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
       Allega e Invia
     </button>
@@ -463,6 +464,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────
@@ -861,69 +863,87 @@ function downloadPDF() {
   _lastPdfDoc.save('Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf');
 }
 function allegaEInvia() {
-  if (!_lastPdfDoc) { toast('Genera prima l\'anteprima PDF.', 'error'); return; }
-  var d    = collect();
-  var nome = (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_');
+  if (!_lastPdfDoc) { toast("Genera prima l'anteprima PDF.", 'error'); return; }
+  var d = collect();
+  if (!d.email) { toast("Inserisci l'e-mail del cliente nel modulo.", 'error'); return; }
+  if (!cfg.gasUrl) { toast("Configura prima l'URL dello script Google Apps.", 'error'); openSetup(); return; }
 
-  // 1. Scarica automaticamente il PDF
-  _lastPdfDoc.save('Cedolino_' + nome + '.pdf');
+  var btn = document.getElementById('btnAllegaInvia');
+  if (btn) { btn.disabled = true; btn.textContent = 'Invio in corso...'; }
 
-  // 2. Dopo mezzo secondo apre il client mail con oggetto e corpo precompilati
-  setTimeout(function() {
-    var subject = encodeURIComponent('Cedolino Intervento Italbatterie n\u00b0 ' + (d.numCedolino||''));
-    var body    = encodeURIComponent(
-      'Gentile cliente,\n\n' +
-      'alleghiamo l\'esito dell\'intervento n\u00b0 ' + (d.numCedolino||'') +
-      ' effettuato in data ' + (d.dataIntervento||'') + '.\n\n' +
-      'In allegato trova il cedolino completo in formato PDF\n' +
-      '(file: Cedolino_' + nome + '.pdf).\n\n' +
-      'Cordiali saluti,\nItalbatterie\nLa tua strada, la nostra energia'
-    );
-    var to = encodeURIComponent(d.email || '');
-    window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
-  }, 600);
-
-  toast('PDF scaricato — allega il file alla mail che si apre!', 'success');
-}
-
-function condividiPDF() {
-  if (!_lastPdfDoc) { toast('Genera prima l\'anteprima PDF.', 'error'); return; }
-  var d    = collect();
-  var nome = 'Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf';
-  var pdfBytes = _lastPdfDoc.output('arraybuffer');
-  var file     = new File([pdfBytes], nome, { type: 'application/pdf' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({
-      title:   'Cedolino ' + (d.numCedolino||''),
-      text:    'Cedolino intervento Italbatterie n\u00b0 ' + (d.numCedolino||''),
-      files:   [file]
-    }).catch(function(e){ if(e.name !== 'AbortError') toast('Condivisione annullata.', 'info'); });
-  } else {
-    // Fallback: download
-    _lastPdfDoc.save(nome);
-    toast('Condivisione non disponibile — PDF scaricato.', 'info');
+  function resetBtn() {
+    if (btn) { btn.disabled = false; btn.textContent = '📎 Allega e Invia'; }
   }
+
+  // Genera PDF base64 (solo la parte dati, senza prefisso data:...)
+  var pdfBase64 = _lastPdfDoc.output('datauristring').split(',')[1];
+  var nomePDF   = 'Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf';
+
+  var veicoliTesto = (d.veicoli||[]).map(function(v,i){
+    return (i+1)+'. '+(v.mezzo||'--')+' | Targa: '+(v.targa||'--')+
+           ' | Eta batteria: '+(v.eta||'--')+
+           '\n   Nota: '+(v.nota||'--')+
+           '\n   Esito: '+(v.esito||'--');
+  }).join('\n');
+
+  var payload = {
+    action:         'submitCedolino',
+    numCedolino:    d.numCedolino    || '',
+    dataIntervento: d.dataIntervento || '',
+    tecnico:        d.tecnico        || '',
+    nome:           d.nome           || '',
+    cognome:        d.cognome        || '',
+    azienda:        d.azienda        || '',
+    indirizzo:      d.indirizzo      || '',
+    telefono:       d.telefono       || '',
+    email:          d.email          || '',
+    note:           d.note           || '',
+    veicoli:        d.veicoli        || [],
+    firma:          (d.firma && d.firma.indexOf('TEXT:')===0) ? d.firma : null,
+    timestamp:      d.timestamp,
+    pdfBase64:      pdfBase64,
+    pdfName:        nomePDF
+  };
+
+  fetch(cfg.gasUrl, {
+    method:  'POST',
+    mode:    'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body:    JSON.stringify(payload)
+  }).then(function() {
+    toast('Cedolino inviato a ' + d.email + ' ✓', 'success');
+    resetBtn();
+  }).catch(function() {
+    // Fallback XHR
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', cfg.gasUrl, true);
+    xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
+    xhr.timeout = 20000;
+    xhr.onload    = function(){ toast('Cedolino inviato a ' + d.email + ' ✓', 'success'); resetBtn(); };
+    xhr.onerror   = function(){ toast('Errore di rete. Riprova.', 'error'); resetBtn(); };
+    xhr.ontimeout = function(){ toast('Timeout. Riprova.', 'error'); resetBtn(); };
+    xhr.send(JSON.stringify(payload));
+  });
 }
 
-// Mantenuta per compatibilità
-function sendFromPreview() {
-  allegaEInvia();
-}
+
 
 // ─── INVIO ───────────────────────────────────────────────────────────
+// Strategia: fetch normale (con CORS abilitato lato GAS).
+// Il PDF base64 viene incluso nel payload e allegato dallo script GAS.
 function gasPost(action) {
   var d   = collect();
   var err = validate(d);
   if (err) { toast(err, 'error'); return; }
-  if (!cfg.gasUrl) { toast('Configura l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
+  if (!cfg.gasUrl) { toast("Configura l'URL dello script Google Apps.", 'error'); openSetup(); return; }
 
-  var btnId    = action==='submitCedolino' ? 'sendBtn'   : 'dbBtn';
-  var labelId  = action==='submitCedolino' ? 'sendLabel' : 'dbLabel';
-  var spinId   = action==='submitCedolino' ? 'sendSpin'  : 'dbSpin';
-  var origLbl  = action==='submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
-  var okMsg    = action==='submitCedolino' ? 'Cedolino inviato a '+d.email+' \u2713' : 'Dati salvati nel database \u2713';
+  var btnId   = action === 'submitCedolino' ? 'sendBtn'   : 'dbBtn';
+  var labelId = action === 'submitCedolino' ? 'sendLabel' : 'dbLabel';
+  var spinId  = action === 'submitCedolino' ? 'sendSpin'  : 'dbSpin';
+  var origLbl = action === 'submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
+  var okMsg   = action === 'submitCedolino' ? 'Dati salvati nel database ✓' : 'Dati salvati nel database ✓';
 
-  document.getElementById(labelId).textContent = action==='submitCedolino' ? 'Generazione PDF\u2026' : 'Invio\u2026';
+  document.getElementById(labelId).textContent = 'Invio...';
   document.getElementById(spinId).classList.add('show');
   document.getElementById(btnId).disabled = true;
 
@@ -933,44 +953,46 @@ function gasPost(action) {
     document.getElementById(btnId).disabled = false;
   }
   function onOk()   { toast(okMsg, 'success'); resetUI(); }
-  function onFail() { toast('Errore di rete. Controlla la connessione.', 'error'); resetUI(); }
+  function onFail(e){ toast('Errore: ' + (e||'connessione fallita'), 'error'); resetUI(); }
 
-  var pdfBase64 = null;
-  if (action === 'submitCedolino') {
+  // Payload SENZA pdf (il PDF lo manda allegaEInvia via EmailJS separatamente)
+  var payload = {
+    action:         action,
+    numCedolino:    d.numCedolino,
+    dataIntervento: d.dataIntervento,
+    tecnico:        d.tecnico,
+    nome:           d.nome,
+    cognome:        d.cognome,
+    azienda:        d.azienda,
+    indirizzo:      d.indirizzo,
+    telefono:       d.telefono,
+    email:          d.email,
+    note:           d.note,
+    veicoli:        d.veicoli,
+    firma:          (d.firma && d.firma.indexOf('data:image') === 0) ? null : d.firma,
+    timestamp:      d.timestamp
+  };
+
+  var body = JSON.stringify(payload);
+
+  fetch(cfg.gasUrl, {
+    method:  'POST',
+    mode:    'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body:    body
+  }).then(onOk).catch(function() {
+    // XHR fallback
     try {
-      var pdfDoc = buildPDF(d);
-      if (pdfDoc) pdfBase64 = pdfDoc.output('datauristring').split(',')[1];
-    } catch(ex) { console.warn('PDF build error:', ex); }
-  }
-
-  document.getElementById(labelId).textContent = 'Invio\u2026';
-  var payload = JSON.stringify({ action: action, pdfBase64: pdfBase64,
-    numCedolino: d.numCedolino, dataIntervento: d.dataIntervento, tecnico: d.tecnico,
-    nome: d.nome, cognome: d.cognome, azienda: d.azienda, indirizzo: d.indirizzo,
-    telefono: d.telefono, email: d.email, note: d.note, veicoli: d.veicoli,
-    firma: (d.firma && d.firma.indexOf('data:image')===0) ? null : d.firma,
-    timestamp: d.timestamp
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', cfg.gasUrl, true);
+      xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
+      xhr.timeout = 15000;
+      xhr.onload    = function(){ onOk(); };
+      xhr.onerror   = function(){ onFail('rete'); };
+      xhr.ontimeout = function(){ onFail('timeout'); };
+      xhr.send(body);
+    } catch(ex) { onFail(ex.message); }
   });
-
-  if (typeof fetch !== 'undefined') {
-    fetch(cfg.gasUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:payload })
-    .then(onOk).catch(function(){ xhrFallback(payload, onOk, onFail); });
-    return;
-  }
-  xhrFallback(payload, onOk, onFail);
-}
-
-function xhrFallback(payload, onOk, onFail) {
-  try {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', cfg.gasUrl, true);
-    xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
-    xhr.timeout = 15000;
-    xhr.onload    = function(){ onOk(); };
-    xhr.onerror   = function(){ onFail(); };
-    xhr.ontimeout = function(){ onFail(); };
-    xhr.send(payload);
-  } catch(e) { onFail(); }
 }
 
 // ─── EXCEL ───────────────────────────────────────────────────────────
@@ -1050,6 +1072,8 @@ function toast(msg, type) {
 
 // ─── INIT ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+  // Inizializza EmailJS
+  emailjs.init('MY0CY2cp7d8h8C-oQ');
   try { var s=JSON.parse(localStorage.getItem('ib_cfg')||'{}'); if(s.gasUrl) cfg.gasUrl=s.gasUrl; if(s.senderEmail) cfg.senderEmail=s.senderEmail; } catch(e){}
   document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
   // Mostra "Condividi" solo se il browser supporta Web Share API con file

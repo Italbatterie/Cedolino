@@ -459,507 +459,551 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-// ─── CONFIG ──────────────────────────────────────────────
-let cfg = { gasUrl: 'https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec' };8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec" };
-try { const s = JSON.parse(localStorage.getItem('ib_cfg')||'{}'); cfg = Object.assign(cfg,s); } catch(e){}
+// ─── CONFIG ─────────────────────────────────────────────────────────
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec';
+var cfg = { gasUrl: GAS_URL };
+try { var _s = JSON.parse(localStorage.getItem('ib_cfg') || '{}'); if(_s.gasUrl) cfg.gasUrl = _s.gasUrl; } catch(e){}
 
 function loadCfg() {
-  if(cfg.gasUrl)     document.getElementById('gasUrl').value     = cfg.gasUrl;
-  if(cfg.senderEmail)document.getElementById('senderEmail').value= cfg.senderEmail;
+  document.getElementById('gasUrl').value = cfg.gasUrl || '';
+  document.getElementById('senderEmail').value = cfg.senderEmail || '';
 }
 function openSetup()  { loadCfg(); document.getElementById('setupModal').classList.add('open'); }
 function closeSetup() { document.getElementById('setupModal').classList.remove('open'); }
-function saveSetup()  {
-  cfg = { gasUrl: document.getElementById('gasUrl').value.trim(),
-           senderEmail: document.getElementById('senderEmail').value.trim() };
+function saveSetup() {
+  cfg.gasUrl      = document.getElementById('gasUrl').value.trim();
+  cfg.senderEmail = document.getElementById('senderEmail').value.trim();
   try { localStorage.setItem('ib_cfg', JSON.stringify(cfg)); } catch(e){}
-  closeSetup(); toast('Configurazione salvata ✓','success');
+  closeSetup(); toast('Configurazione salvata', 'success');
 }
 
-// ─── SIG TABS ─────────────────────────────────────────────
-let activeTab = 'draw';
-function switchTab(mode,btn) {
+// ─── FIRMA TABS ──────────────────────────────────────────────────────
+var activeTab = 'draw';
+function switchTab(mode, btn) {
   activeTab = mode;
-  document.querySelectorAll('.sig-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.sig-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sig-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.sig-panel').forEach(function(p){ p.classList.remove('active'); });
   btn.classList.add('active');
-  document.getElementById(mode==='draw'?'panelDraw':'panelText').classList.add('active');
+  document.getElementById(mode === 'draw' ? 'panelDraw' : 'panelText').classList.add('active');
   upd();
 }
-function updTsig() { document.getElementById('tsigPrev').textContent=document.getElementById('tsigInput').value; upd(); }
+function updTsig() {
+  document.getElementById('tsigPrev').textContent = document.getElementById('tsigInput').value;
+  upd();
+}
 
-// ─── CANVAS SIGNATURE ─────────────────────────────────────
-const canvas=document.getElementById('sigCanvas'), ctx=canvas.getContext('2d');
-let drawing=false, hasSig=false;
+// ─── CANVAS FIRMA ────────────────────────────────────────────────────
+var canvas  = document.getElementById('sigCanvas');
+var ctx     = canvas.getContext('2d');
+var drawing = false;
+var hasSig  = false;
+
 function resizeCv() {
-  const wrap=document.getElementById('sigWrap'), r=window.devicePixelRatio||1;
-  const w=wrap.clientWidth, h=Math.min(170,Math.max(130,window.innerWidth*.22));
-  canvas.width=w*r; canvas.height=h*r;
-  canvas.style.width=w+'px'; canvas.style.height=h+'px';
-  ctx.scale(r,r); ctx.strokeStyle='#00475d'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+  var wrap = document.getElementById('sigWrap');
+  var r    = window.devicePixelRatio || 1;
+  var w    = wrap.clientWidth;
+  var h    = Math.min(170, Math.max(130, window.innerWidth * 0.22));
+  canvas.width  = w * r; canvas.height = h * r;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  ctx.scale(r, r);
+  ctx.strokeStyle = '#00475d'; ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 }
-resizeCv(); window.addEventListener('resize',resizeCv);
-function gp(e){ const b=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e; return{x:s.clientX-b.left,y:s.clientY-b.top}; }
-canvas.addEventListener('mousedown',e=>{ drawing=true; const p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
-canvas.addEventListener('mousemove',e=>{ if(!drawing)return; const p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); });
-canvas.addEventListener('mouseup',()=>drawing=false);
-canvas.addEventListener('mouseleave',()=>drawing=false);
-canvas.addEventListener('touchstart',e=>{ e.preventDefault(); drawing=true; const p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); },{passive:false});
-canvas.addEventListener('touchmove',e=>{ e.preventDefault(); if(!drawing)return; const p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); },{passive:false});
-canvas.addEventListener('touchend',()=>drawing=false);
-function setSig(s) { hasSig=s; document.getElementById('sigPH').style.opacity=s?'0':'1'; document.getElementById('sigWrap').classList.toggle('has-sig',s); upd(); }
-function clearSig() { const r=window.devicePixelRatio||1; ctx.clearRect(0,0,canvas.width/r,canvas.height/r); setSig(false); }
-function getSigData() {
-  if(activeTab==='draw') return hasSig?canvas.toDataURL('image/png'):null;
-  const t=document.getElementById('tsigInput').value.trim();
-  return t?'TEXT:'+t:null;
-}
-function sigOk() { return activeTab==='draw'?hasSig:document.getElementById('tsigInput').value.trim()!==''; }
+resizeCv();
+window.addEventListener('resize', resizeCv);
 
-// ─── VEHICLE TABLE ─────────────────────────────────────────
-let rowN=0;
-const ESITI=['','Batteria sostituita','Batteria caricata','Batteria non riparabile',
-  'Controllo diagnostico eseguito','Collaudo OK','Intervento rimandato','Manutenzione programmata'];
-function addRow(d={}) {
+function getPos(e) {
+  var b = canvas.getBoundingClientRect();
+  var s = e.touches ? e.touches[0] : e;
+  return { x: s.clientX - b.left, y: s.clientY - b.top };
+}
+canvas.addEventListener('mousedown', function(e){ drawing=true; var p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove', function(e){ if(!drawing) return; var p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); });
+canvas.addEventListener('mouseup',    function(){ drawing=false; });
+canvas.addEventListener('mouseleave', function(){ drawing=false; });
+canvas.addEventListener('touchstart', function(e){ e.preventDefault(); drawing=true; var p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  function(e){ e.preventDefault(); if(!drawing) return; var p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); setSig(true); }, {passive:false});
+canvas.addEventListener('touchend',   function(){ drawing=false; });
+
+function setSig(s) {
+  hasSig = s;
+  document.getElementById('sigPH').style.opacity = s ? '0' : '1';
+  document.getElementById('sigWrap').classList.toggle('has-sig', s);
+  upd();
+}
+function clearSig() {
+  var r = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width/r, canvas.height/r);
+  setSig(false);
+}
+function getSigData() {
+  if (activeTab === 'draw') return hasSig ? canvas.toDataURL('image/png') : null;
+  var t = document.getElementById('tsigInput').value.trim();
+  return t ? 'TEXT:' + t : null;
+}
+function sigOk() {
+  if (activeTab === 'draw') return hasSig;
+  return document.getElementById('tsigInput').value.trim() !== '';
+}
+
+// ─── TABELLA VEICOLI ─────────────────────────────────────────────────
+var rowN = 0;
+var ESITI = [
+  '', 'Batteria sostituita', 'Batteria caricata', 'Batteria non riparabile',
+  'Controllo diagnostico eseguito', 'Collaudo OK', 'Intervento rimandato', 'Manutenzione programmata'
+];
+
+function buildOpts(selected) {
+  return ESITI.map(function(e) {
+    return '<option value="' + e + '"' + (selected === e ? ' selected' : '') + '>' + (e || '— Seleziona esito —') + '</option>';
+  }).join('');
+}
+
+function addRow(d) {
+  d = d || {};
   rowN++;
-  const id=rowN;
-  const opts=ESITI.map(e=>`<option value="${e}" ${d.esito===e?'selected':''}>${e||'— Seleziona esito —'}</option>`).join('');
-  // Desktop row
-  const tr=document.createElement('tr'); tr.dataset.rowId=id;
-  tr.innerHTML=`<td><input type="text" placeholder="Furgone, Auto…" value="${d.mezzo||''}"/></td>
-    <td><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="${d.targa||''}"/></td>
-    <td><input type="text" placeholder="es. 18 mesi" value="${d.eta||''}"/></td>
-    <td><textarea placeholder="Descrizione…">${d.nota||''}</textarea></td>
-    <td><select>${opts}</select></td>
-    <td><button class="del-btn" onclick="delRow(${id})">✕</button></td>`;
+  var id   = rowN;
+  var opts = buildOpts(d.esito || '');
+
+  // Riga desktop
+  var tr = document.createElement('tr');
+  tr.setAttribute('data-row-id', id);
+  tr.innerHTML =
+    '<td><input type="text" placeholder="Furgone, Auto, Muletto…" value="' + (d.mezzo||'') + '"/></td>' +
+    '<td><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="' + (d.targa||'') + '"/></td>' +
+    '<td><input type="text" placeholder="es. 18 mesi" value="' + (d.eta||'') + '"/></td>' +
+    '<td><textarea placeholder="Descrizione intervento…">' + (d.nota||'') + '</textarea></td>' +
+    '<td><select>' + opts + '</select></td>' +
+    '<td><button class="del-btn" onclick="delRow(' + id + ')" title="Elimina">✕</button></td>';
   document.getElementById('vbody').appendChild(tr);
-  // Mobile card
-  const card=document.createElement('div'); card.className='vcard'; card.dataset.rowId=id;
-  card.innerHTML=`<div class="vcard-hd"><span class="vcard-num">Veicolo ${id}</span>
-    <button class="del-btn" onclick="delRow(${id})">✕</button></div>
-    <div class="vcard-grid">
-      <div class="f"><label>Mezzo</label><input type="text" placeholder="Furgone, Auto…" value="${d.mezzo||''}" oninput="syncCard(${id},0,this.value)"/></div>
-      <div class="f"><label>Targa</label><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="${d.targa||''}" oninput="syncCard(${id},1,this.value)"/></div>
-      <div class="f"><label>Età Batteria</label><input type="text" placeholder="es. 18 mesi" value="${d.eta||''}" oninput="syncCard(${id},2,this.value)"/></div>
-      <div class="f vcard-full"><label>Nota di Intervento</label><textarea oninput="syncCard(${id},3,this.value)">${d.nota||''}</textarea></div>
-      <div class="f vcard-full"><label>Esito</label><select onchange="syncCard(${id},4,this.value)">${opts}</select></div>
-    </div>`;
+
+  // Card mobile
+  var card = document.createElement('div');
+  card.className = 'vcard';
+  card.setAttribute('data-row-id', id);
+  card.innerHTML =
+    '<div class="vcard-hd">' +
+      '<span class="vcard-num">Veicolo ' + id + '</span>' +
+      '<button class="del-btn" onclick="delRow(' + id + ')">✕</button>' +
+    '</div>' +
+    '<div class="vcard-grid">' +
+      '<div class="f"><label>Mezzo</label><input type="text" placeholder="Furgone, Auto…" value="' + (d.mezzo||'') + '" oninput="syncCard(' + id + ',0,this.value)"/></div>' +
+      '<div class="f"><label>Targa</label><input type="text" placeholder="AA000BB" style="text-transform:uppercase" value="' + (d.targa||'') + '" oninput="syncCard(' + id + ',1,this.value)"/></div>' +
+      '<div class="f"><label>Eta Batteria</label><input type="text" placeholder="es. 18 mesi" value="' + (d.eta||'') + '" oninput="syncCard(' + id + ',2,this.value)"/></div>' +
+      '<div class="f vcard-full"><label>Nota Intervento</label><textarea oninput="syncCard(' + id + ',3,this.value)">' + (d.nota||'') + '</textarea></div>' +
+      '<div class="f vcard-full"><label>Esito</label><select onchange="syncCard(' + id + ',4,this.value)">' + opts + '</select></div>' +
+    '</div>';
   document.getElementById('vcardList').appendChild(card);
   upd();
 }
+
 function delRow(id) {
-  const tr=document.querySelector('#vbody tr[data-row-id="'+id+'"]');
-  const c=document.querySelector('#vcardList .vcard[data-row-id="'+id+'"]');
-  if(tr) tr.remove(); if(c) c.remove(); upd();
+  var tr   = document.querySelector('#vbody tr[data-row-id="' + id + '"]');
+  var card = document.querySelector('#vcardList .vcard[data-row-id="' + id + '"]');
+  if (tr)   tr.remove();
+  if (card) card.remove();
+  upd();
 }
-function syncCard(id,fi,val) {
-  const tr=document.querySelector('#vbody tr[data-row-id="'+id+'"]');
-  if(!tr) return;
-  tr.querySelectorAll('input,textarea,select')[fi].value=val;
+
+function syncCard(id, fi, val) {
+  var tr = document.querySelector('#vbody tr[data-row-id="' + id + '"]');
+  if (!tr) return;
+  var inputs = tr.querySelectorAll('input,textarea,select');
+  if (inputs[fi]) inputs[fi].value = val;
 }
+
 function getVehicles() {
-  return Array.from(document.querySelectorAll('#vbody tr')).map(tr=>{
-    const i=tr.querySelectorAll('input,textarea,select');
-    return{mezzo:i[0].value.trim(),targa:i[1].value.trim().toUpperCase(),
-            eta:i[2].value.trim(),nota:i[3].value.trim(),esito:i[4].value.trim()};
+  return Array.from(document.querySelectorAll('#vbody tr')).map(function(tr) {
+    var i = tr.querySelectorAll('input,textarea,select');
+    return {
+      mezzo:  i[0].value.trim(),
+      targa:  i[1].value.trim().toUpperCase(),
+      eta:    i[2].value.trim(),
+      nota:   i[3].value.trim(),
+      esito:  i[4].value.trim()
+    };
   });
 }
 
-// ─── PROGRESS ──────────────────────────────────────────────
+// ─── PROGRESS ────────────────────────────────────────────────────────
 function upd() {
-  const req=['nome','cognome','azienda','email','numCed','dataInt'];
-  const filled=req.filter(id=>document.getElementById(id).value.trim()).length;
-  const v=document.querySelectorAll('#vbody tr').length>0?1:0;
-  const s=sigOk()?1:0;
-  const pct=Math.min(100,Math.round((filled+v+s)/(req.length+2)*100));
-  document.getElementById('pFill').style.width=pct+'%';
-  document.getElementById('pctLabel').textContent=pct+'%';
+  var req    = ['nome','cognome','azienda','email','numCed','dataInt'];
+  var filled = req.filter(function(id){ return document.getElementById(id).value.trim(); }).length;
+  var v      = document.querySelectorAll('#vbody tr').length > 0 ? 1 : 0;
+  var s      = sigOk() ? 1 : 0;
+  var pct    = Math.min(100, Math.round((filled + v + s) / (req.length + 2) * 100));
+  document.getElementById('pFill').style.width = pct + '%';
+  document.getElementById('pctLabel').textContent = pct + '%';
 }
 
-// ─── COLLECT / VALIDATE ────────────────────────────────────
+// ─── COLLECT / VALIDATE ──────────────────────────────────────────────
 function collect() {
   return {
-    numCedolino:document.getElementById('numCed').value.trim(),
-    dataIntervento:document.getElementById('dataInt').value,
-    tecnico:document.getElementById('tecnico').value.trim(),
-    nome:document.getElementById('nome').value.trim(),
-    cognome:document.getElementById('cognome').value.trim(),
-    azienda:document.getElementById('azienda').value.trim(),
-    indirizzo:document.getElementById('indirizzo').value.trim(),
-    telefono:document.getElementById('telefono').value.trim(),
-    email:document.getElementById('email').value.trim(),
-    note:document.getElementById('note').value.trim(),
-    veicoli:getVehicles(),
-    firma:getSigData(),
-    timestamp:new Date().toISOString()
+    numCedolino:    document.getElementById('numCed').value.trim(),
+    dataIntervento: document.getElementById('dataInt').value,
+    tecnico:        document.getElementById('tecnico').value.trim(),
+    nome:           document.getElementById('nome').value.trim(),
+    cognome:        document.getElementById('cognome').value.trim(),
+    azienda:        document.getElementById('azienda').value.trim(),
+    indirizzo:      document.getElementById('indirizzo').value.trim(),
+    telefono:       document.getElementById('telefono').value.trim(),
+    email:          document.getElementById('email').value.trim(),
+    note:           document.getElementById('note').value.trim(),
+    veicoli:        getVehicles(),
+    firma:          getSigData(),
+    timestamp:      new Date().toISOString()
   };
 }
 function validate(d) {
-  if(!d.nome)          return 'Inserisci il nome del cliente.';
-  if(!d.cognome)       return 'Inserisci il cognome del cliente.';
-  if(!d.azienda)       return 'Inserisci il nome dell'azienda.';
-  if(!d.email)         return 'Inserisci l'e-mail del cliente.';
-  if(!d.numCedolino)   return 'Inserisci il numero cedolino.';
-  if(!d.dataIntervento)return 'Inserisci la data dell'intervento.';
-  if(d.veicoli.length===0) return 'Aggiungi almeno un veicolo.';
+  if (!d.nome)           return 'Inserisci il nome del cliente.';
+  if (!d.cognome)        return 'Inserisci il cognome del cliente.';
+  if (!d.azienda)        return 'Inserisci il nome dell\'azienda.';
+  if (!d.email)          return 'Inserisci l\'e-mail del cliente.';
+  if (!d.numCedolino)    return 'Inserisci il numero cedolino.';
+  if (!d.dataIntervento) return 'Inserisci la data dell\'intervento.';
+  if (d.veicoli.length === 0) return 'Aggiungi almeno un veicolo.';
   return null;
 }
 
-// ─── GENERA PDF (jsPDF) ────────────────────────────────────
-let _lastPdfDoc = null;
+// ─── GENERA PDF ──────────────────────────────────────────────────────
+var _lastPdfDoc = null;
+
 function buildPDF(d) {
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, M=15, CW=W-M*2;
-  let y=0;
+  var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFLib) { alert('Libreria PDF non ancora caricata. Riprova tra un secondo.'); return null; }
+  var doc = new jsPDFLib({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var W = 210, M = 15, CW = W - M * 2;
+  var y = 0;
 
-  // ── HEADER BLU ────────────────────────────────────────────
-  doc.setFillColor(0,71,93);
-  doc.rect(0,0,W,32,'F');
-
-  // Rettangolo decorativo chiaro
-  doc.setFillColor(0,95,122);
-  doc.rect(0,24,W,8,'F');
-
+  // Header blu
+  doc.setFillColor(0,71,93); doc.rect(0,0,W,32,'F');
+  doc.setFillColor(0,95,122); doc.rect(0,24,W,8,'F');
   doc.setTextColor(255,255,255);
   doc.setFontSize(20); doc.setFont('helvetica','bold');
   doc.text('ITALBATTERIE', W/2, 12, {align:'center'});
   doc.setFontSize(8); doc.setFont('helvetica','normal');
   doc.text('La tua strada, la nostra energia', W/2, 18, {align:'center'});
   doc.setFontSize(9.5); doc.setFont('helvetica','bold');
-  doc.text('CEDOLINO DI INTERVENTO  N°  ' + (d.numCedolino||''), W/2, 28.5, {align:'center'});
+  doc.text('CEDOLINO DI INTERVENTO  N\u00b0  ' + (d.numCedolino||''), W/2, 28.5, {align:'center'});
   y = 38;
 
-  // ── RIQUADRO INFO INTERVENTO ─────────────────────────────
-  doc.setFillColor(232,244,248);
-  doc.roundedRect(M, y, CW, 18, 2, 2, 'F');
-  doc.setDrawColor(168,200,212);
-  doc.roundedRect(M, y, CW, 18, 2, 2, 'S');
-
-  const col = CW/3;
-  [
-    ['DATA INTERVENTO', d.dataIntervento||'—', M+col*0+4],
-    ['N° CEDOLINO',     d.numCedolino||'—',    M+col*1+4],
-    ['TECNICO',         d.tecnico||'—',         M+col*2+4],
-  ].forEach(([lbl,val,x]) => {
+  // Box info intervento
+  doc.setFillColor(232,244,248); doc.roundedRect(M,y,CW,18,2,2,'F');
+  doc.setDrawColor(168,200,212); doc.roundedRect(M,y,CW,18,2,2,'S');
+  var col3 = CW/3;
+  var infoData = [
+    ['DATA INTERVENTO', d.dataIntervento||'\u2014', M+2],
+    ['N\u00b0 CEDOLINO',     d.numCedolino||'\u2014',    M+col3+2],
+    ['TECNICO',         d.tecnico||'\u2014',         M+col3*2+2]
+  ];
+  infoData.forEach(function(item) {
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(122,154,170);
-    doc.text(lbl, x, y+6);
+    doc.text(item[0], item[2], y+6);
     doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(26,46,56);
-    doc.text(val, x, y+14);
+    doc.text(item[1], item[2], y+14);
   });
-  // Separatori verticali
   doc.setDrawColor(168,200,212);
-  doc.line(M+col,   y+3, M+col,   y+15);
-  doc.line(M+col*2, y+3, M+col*2, y+15);
+  doc.line(M+col3,y+3,M+col3,y+15);
+  doc.line(M+col3*2,y+3,M+col3*2,y+15);
   y += 24;
 
-  // ── SEZIONE DATI CLIENTE ─────────────────────────────────
-  // Titolo sezione
-  doc.setFillColor(0,71,93);
-  doc.rect(M, y, CW, 8, 'F');
+  // Dati cliente
+  doc.setFillColor(0,71,93); doc.rect(M,y,CW,8,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
   doc.text('  DATI CLIENTE', M+2, y+5.5);
   y += 10;
-
-  doc.setFillColor(250,253,254);
-  doc.rect(M, y, CW, 30, 'F');
-  doc.setDrawColor(207,226,234); doc.rect(M, y, CW, 30, 'S');
-
+  doc.setFillColor(250,253,254); doc.setDrawColor(207,226,234);
+  doc.rect(M,y,CW,30,'FD');
   doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(26,46,56);
   doc.text((d.nome||'')+' '+(d.cognome||''), M+4, y+8);
   doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(58,90,106);
   doc.text(d.azienda||'', M+4, y+15);
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(122,154,170);
   doc.text(d.indirizzo||'', M+4, y+21);
-  doc.text('Tel: '+(d.telefono||'—')+'   |   Email: '+(d.email||''), M+4, y+27);
+  doc.text('Tel: '+(d.telefono||'\u2014')+'   |   Email: '+(d.email||''), M+4, y+27);
   y += 36;
 
-  // ── SEZIONE VEICOLI ──────────────────────────────────────
-  doc.setFillColor(0,71,93);
-  doc.rect(M, y, CW, 8, 'F');
+  // Veicoli
+  doc.setFillColor(0,71,93); doc.rect(M,y,CW,8,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
   doc.text('  VEICOLI TRATTATI', M+2, y+5.5);
   y += 10;
 
-  // Intestazione colonne tabella
-  const colW = [30, 22, 22, 66, 40];
-  const colHdrs = ['Mezzo','Targa','Età Batt.','Nota di Intervento','Esito'];
-  doc.setFillColor(232,244,248);
-  doc.rect(M, y, CW, 7, 'F');
-  doc.setDrawColor(168,200,212); doc.rect(M, y, CW, 7, 'S');
+  var colW  = [30, 22, 22, 66, 40];
+  var hdrs  = ['Mezzo','Targa','Et\u00e0 Batt.','Nota di Intervento','Esito'];
+  doc.setFillColor(232,244,248); doc.setDrawColor(168,200,212);
+  doc.rect(M,y,CW,7,'FD');
   doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(0,71,93);
-  let cx = M+2;
-  colHdrs.forEach((h,i) => { doc.text(h, cx, y+5); cx += colW[i]; });
+  var cx = M+2;
+  hdrs.forEach(function(h,i){ doc.text(h, cx, y+5); cx += colW[i]; });
   y += 7;
 
-  // Righe veicoli
   doc.setFont('helvetica','normal');
-  (d.veicoli||[]).forEach((v,i) => {
-    const rowLines = Math.max(
-      doc.splitTextToSize(v.nota||'—', colW[3]-3).length,
-      doc.splitTextToSize(v.esito||'—', colW[4]-3).length, 1
-    );
-    const rowH = Math.max(8, rowLines*4.5+3);
-
-    if(y + rowH > 270) { doc.addPage(); y = 14; }
-
-    if(i%2===0) { doc.setFillColor(240,247,250); doc.rect(M,y,CW,rowH,'F'); }
+  var veicoli = d.veicoli || [];
+  veicoli.forEach(function(v, i) {
+    var vals = [v.mezzo||'\u2014', v.targa||'\u2014', v.eta||'\u2014', v.nota||'\u2014', v.esito||'\u2014'];
+    var maxLines = 1;
+    vals.forEach(function(val,j){
+      var lines = doc.splitTextToSize(val, colW[j]-3);
+      if(lines.length > maxLines) maxLines = lines.length;
+    });
+    var rowH = Math.max(8, maxLines * 4.5 + 3);
+    if (y + rowH > 270) { doc.addPage(); y = 14; }
+    if (i%2===0) { doc.setFillColor(240,247,250); doc.rect(M,y,CW,rowH,'F'); }
     doc.setDrawColor(207,226,234); doc.rect(M,y,CW,rowH,'S');
-
     doc.setFontSize(8.5); doc.setTextColor(26,46,56);
     cx = M+2;
-    const vals = [v.mezzo||'—', v.targa||'—', v.eta||'—', v.nota||'—', v.esito||'—'];
-    vals.forEach((val,j) => {
-      const lines = doc.splitTextToSize(val, colW[j]-3);
+    vals.forEach(function(val,j){
+      var lines = doc.splitTextToSize(val, colW[j]-3);
       doc.text(lines, cx, y+5.5);
       cx += colW[j];
     });
-    // Separatori colonne
     doc.setDrawColor(207,226,234);
     cx = M;
-    colW.slice(0,-1).forEach(w => { cx+=w; doc.line(cx,y,cx,y+rowH); });
+    colW.slice(0,-1).forEach(function(w){ cx+=w; doc.line(cx,y,cx,y+rowH); });
     y += rowH;
   });
   y += 6;
 
-  // ── NOTE ─────────────────────────────────────────────────
-  if(d.note) {
-    if(y+20 > 270) { doc.addPage(); y=14; }
+  // Note
+  if (d.note) {
+    if (y+20 > 270) { doc.addPage(); y=14; }
     doc.setFillColor(0,71,93); doc.rect(M,y,CW,8,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
     doc.text('  NOTE AGGIUNTIVE', M+2, y+5.5);
     y += 10;
+    var noteLines = doc.splitTextToSize(d.note, CW-6);
+    var noteH = noteLines.length*5+6;
     doc.setFillColor(250,253,254); doc.setDrawColor(207,226,234);
-    const noteLines = doc.splitTextToSize(d.note, CW-6);
-    const noteH = noteLines.length*5+6;
     doc.rect(M,y,CW,noteH,'FD');
     doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(26,46,56);
     doc.text(noteLines, M+4, y+5);
     y += noteH+6;
   }
 
-  // ── FIRMA ────────────────────────────────────────────────
-  if(y+28 > 270) { doc.addPage(); y=14; }
+  // Firma
+  if (y+28 > 270) { doc.addPage(); y=14; }
   doc.setFillColor(0,71,93); doc.rect(M,y,CW,8,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
   doc.text('  FIRMA CLIENTE', M+2, y+5.5);
   y += 10;
   doc.setFillColor(250,253,254); doc.setDrawColor(207,226,234);
   doc.rect(M,y,CW,26,'FD');
-  if(d.firma && d.firma.indexOf('TEXT:')===0) {
+  if (d.firma && d.firma.indexOf('TEXT:')===0) {
     doc.setFont('helvetica','italic'); doc.setFontSize(18); doc.setTextColor(0,47,61);
     doc.text(d.firma.replace('TEXT:',''), M+5, y+18);
-  } else if(d.firma && d.firma.indexOf('data:image')===0) {
-    try { doc.addImage(d.firma,'PNG',M+4,y+3,55,20); } catch(e){}
+  } else if (d.firma && d.firma.indexOf('data:image')===0) {
+    try { doc.addImage(d.firma,'PNG',M+4,y+3,55,20); } catch(ex){}
   } else {
-    doc.setDrawColor(0,71,93); doc.setLineWidth(0.5);
-    doc.line(M+5, y+20, M+80, y+20); doc.setLineWidth(0.2);
+    doc.setDrawColor(0,71,93); doc.line(M+5,y+20,M+80,y+20);
   }
   y += 32;
 
-  // ── FOOTER su ogni pagina ─────────────────────────────────
-  const pages = doc.internal.getNumberOfPages();
-  for(let p=1;p<=pages;p++) {
+  // Footer su ogni pagina
+  var pages = doc.internal.getNumberOfPages();
+  for (var p=1; p<=pages; p++) {
     doc.setPage(p);
     doc.setFillColor(0,71,93); doc.rect(0,287,W,10,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    doc.text('Italbatterie  ·  La tua strada, la nostra energia', W/2, 293.5, {align:'center'});
-    if(pages>1) {
-      doc.setFontSize(7);
-      doc.text('Pagina '+p+' di '+pages, W-M, 293.5, {align:'right'});
-    }
+    doc.text('Italbatterie  \u00b7  La tua strada, la nostra energia', W/2, 293.5, {align:'center'});
+    if (pages>1) { doc.setFontSize(7); doc.text('Pag. '+p+'/'+pages, W-M, 293.5, {align:'right'}); }
   }
 
   return doc;
 }
 
-// ─── PDF PREVIEW ──────────────────────────────────────────
+// ─── ANTEPRIMA PDF ───────────────────────────────────────────────────
 function openPDFPreview() {
-  const d = collect();
-  const err = validate(d);
-  if(err) { toast(err,'error'); return; }
+  var d   = collect();
+  var err = validate(d);
+  if (err) { toast(err, 'error'); return; }
 
   document.getElementById('pdfPreviewPage').classList.add('open');
-  document.getElementById('pdfSpinner').style.display='flex';
-  document.getElementById('pdfCanvasContainer').style.display='none';
-  document.getElementById('pdfCanvasContainer').innerHTML='';
+  document.getElementById('pdfSpinner').style.display = 'flex';
+  document.getElementById('pdfCanvasContainer').style.display = 'none';
+  document.getElementById('pdfCanvasContainer').innerHTML = '';
 
-  setTimeout(() => {
+  setTimeout(function() {
     try {
       _lastPdfDoc = buildPDF(d);
+      if (!_lastPdfDoc) { closePDFPreview(); return; }
 
-      // Render con PDF.js se disponibile, altrimenti usa iframe data-url
-      const pdfData = _lastPdfDoc.output('datauristring');
-      const container = document.getElementById('pdfCanvasContainer');
+      var pdfBytes = _lastPdfDoc.output('arraybuffer');
+      var blob     = new Blob([pdfBytes], { type: 'application/pdf' });
+      var blobUrl  = URL.createObjectURL(blob);
 
-      // Usa iframe per preview (compatibile con tutti i browser)
-      // Usa blob URL (i browser bloccano data: URI negli iframe)
-      const pdfBytes = _lastPdfDoc.output('arraybuffer');
-      const blob = new Blob([pdfBytes], {type: 'application/pdf'});
-      const blobUrl = URL.createObjectURL(blob);
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText='width:210mm;height:min(297mm,80vh);border:none;display:block';
+      var iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:210mm;height:min(297mm,80vh);border:none;display:block';
       iframe.src = blobUrl;
-      container.appendChild(iframe);
 
-      document.getElementById('pdfSpinner').style.display='none';
-      document.getElementById('pdfCanvasContainer').style.display='flex';
-    } catch(e) {
-      toast('Errore generazione PDF: '+e.message,'error');
+      var container = document.getElementById('pdfCanvasContainer');
+      container.appendChild(iframe);
+      document.getElementById('pdfSpinner').style.display = 'none';
+      container.style.display = 'flex';
+    } catch(ex) {
+      toast('Errore PDF: ' + ex.message, 'error');
       closePDFPreview();
     }
-  }, 100);
+  }, 150);
 }
 function closePDFPreview() {
   document.getElementById('pdfPreviewPage').classList.remove('open');
 }
 function downloadPDF() {
-  if(!_lastPdfDoc) { toast('Prima apri l'anteprima PDF.','error'); return; }
-  const d = collect();
-  _lastPdfDoc.save('Cedolino_'+(d.numCedolino||'IB')+'_'+(d.azienda||'cliente').replace(/\s+/g,'_')+'.pdf');
+  if (!_lastPdfDoc) { toast('Apri prima l\'anteprima PDF.', 'error'); return; }
+  var d = collect();
+  _lastPdfDoc.save('Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf');
 }
-
-// ─── SEND FROM PREVIEW ─────────────────────────────────────
 function sendFromPreview() {
   closePDFPreview();
   gasPost('submitCedolino');
 }
 
-// ─── INVIO ─────────────────────────────────────────────────
+// ─── INVIO ───────────────────────────────────────────────────────────
 function gasPost(action) {
-  const d = collect();
-  const err = validate(d);
-  if(err) { toast(err,'error'); return; }
-  if(!cfg.gasUrl) { toast('Configura prima l'URL dello script Google Apps.','error'); openSetup(); return; }
+  var d   = collect();
+  var err = validate(d);
+  if (err) { toast(err, 'error'); return; }
+  if (!cfg.gasUrl) { toast('Configura l\'URL dello script Google Apps.', 'error'); openSetup(); return; }
 
-  const btnId     = action==='submitCedolino'?'sendBtn':'dbBtn';
-  const labelId   = action==='submitCedolino'?'sendLabel':'dbLabel';
-  const spinId    = action==='submitCedolino'?'sendSpin':'dbSpin';
-  const labelOrig = action==='submitCedolino'?'Invia Cedolino':'Invia a Database';
-  const okMsg     = action==='submitCedolino'?'Cedolino inviato a '+d.email+' ✓':'Dati salvati ✓';
+  var btnId    = action==='submitCedolino' ? 'sendBtn'   : 'dbBtn';
+  var labelId  = action==='submitCedolino' ? 'sendLabel' : 'dbLabel';
+  var spinId   = action==='submitCedolino' ? 'sendSpin'  : 'dbSpin';
+  var origLbl  = action==='submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
+  var okMsg    = action==='submitCedolino' ? 'Cedolino inviato a '+d.email+' \u2713' : 'Dati salvati nel database \u2713';
 
-  document.getElementById(labelId).textContent = action==='submitCedolino'?'Generazione PDF…':'Invio…';
+  document.getElementById(labelId).textContent = action==='submitCedolino' ? 'Generazione PDF\u2026' : 'Invio\u2026';
   document.getElementById(spinId).classList.add('show');
   document.getElementById(btnId).disabled = true;
 
   function resetUI() {
-    document.getElementById(labelId).textContent=labelOrig;
+    document.getElementById(labelId).textContent = origLbl;
     document.getElementById(spinId).classList.remove('show');
-    document.getElementById(btnId).disabled=false;
+    document.getElementById(btnId).disabled = false;
   }
-  function onOk()   { toast(okMsg,'success'); resetUI(); }
-  function onFail() { toast('Errore di rete. Controlla la connessione.','error'); resetUI(); }
+  function onOk()   { toast(okMsg, 'success'); resetUI(); }
+  function onFail() { toast('Errore di rete. Controlla la connessione.', 'error'); resetUI(); }
 
-  let pdfBase64 = null;
-  if(action==='submitCedolino') {
+  var pdfBase64 = null;
+  if (action === 'submitCedolino') {
     try {
-      const pdfDoc = buildPDF(d);
-      pdfBase64 = pdfDoc.output('datauristring').split(',')[1];
-    } catch(e) { console.warn('PDF err:', e); }
+      var pdfDoc = buildPDF(d);
+      if (pdfDoc) pdfBase64 = pdfDoc.output('datauristring').split(',')[1];
+    } catch(ex) { console.warn('PDF build error:', ex); }
   }
 
-  document.getElementById(labelId).textContent='Invio…';
-  const payload = JSON.stringify({action, ...d, pdfBase64});
+  document.getElementById(labelId).textContent = 'Invio\u2026';
+  var payload = JSON.stringify({ action: action, pdfBase64: pdfBase64,
+    numCedolino: d.numCedolino, dataIntervento: d.dataIntervento, tecnico: d.tecnico,
+    nome: d.nome, cognome: d.cognome, azienda: d.azienda, indirizzo: d.indirizzo,
+    telefono: d.telefono, email: d.email, note: d.note, veicoli: d.veicoli,
+    firma: (d.firma && d.firma.indexOf('data:image')===0) ? null : d.firma,
+    timestamp: d.timestamp
+  });
 
-  if(typeof fetch !== 'undefined') {
-    fetch(cfg.gasUrl, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:payload})
-    .then(onOk).catch(()=>xhrPost(payload,onOk,()=>formPost(payload,onOk)));
+  if (typeof fetch !== 'undefined') {
+    fetch(cfg.gasUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:payload })
+    .then(onOk).catch(function(){ xhrFallback(payload, onOk, onFail); });
     return;
   }
-  xhrPost(payload, onOk, ()=>formPost(payload,onOk));
+  xhrFallback(payload, onOk, onFail);
 }
 
-function xhrPost(payload,onOk,onFail) {
+function xhrFallback(payload, onOk, onFail) {
   try {
-    const xhr=new XMLHttpRequest();
-    xhr.open('POST',cfg.gasUrl,true);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', cfg.gasUrl, true);
     xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
-    xhr.timeout=15000;
-    xhr.onload=()=>onOk(); xhr.onerror=()=>onFail(); xhr.ontimeout=()=>onFail();
+    xhr.timeout = 15000;
+    xhr.onload    = function(){ onOk(); };
+    xhr.onerror   = function(){ onFail(); };
+    xhr.ontimeout = function(){ onFail(); };
     xhr.send(payload);
-  } catch(e){ onFail(); }
-}
-function formPost(payload,onOk) {
-  try {
-    const iname='gas_'+Date.now();
-    const ifr=document.createElement('iframe'); ifr.name=iname; ifr.style.display='none';
-    document.body.appendChild(ifr);
-    const form=document.createElement('form');
-    form.method='POST'; form.action=cfg.gasUrl; form.target=iname; form.style.display='none';
-    const inp=document.createElement('input'); inp.type='hidden'; inp.name='data'; inp.value=payload;
-    form.appendChild(inp); document.body.appendChild(form); form.submit();
-    setTimeout(()=>{ try{document.body.removeChild(form);document.body.removeChild(ifr);}catch(e){} onOk(); },3000);
-  } catch(e){ toast('Impossibile inviare.','error'); }
+  } catch(e) { onFail(); }
 }
 
-// ─── EXCEL ─────────────────────────────────────────────────
+// ─── EXCEL ───────────────────────────────────────────────────────────
 function exportExcel() {
-  const d=collect();
-  const wb=XLSX.utils.book_new();
-  const ws1=XLSX.utils.aoa_to_sheet([
+  var d  = collect();
+  var wb = XLSX.utils.book_new();
+  var ws1 = XLSX.utils.aoa_to_sheet([
     ['ITALBATTERIE — CEDOLINO INTERVENTO'],[],
-    ['N° Cedolino',d.numCedolino],['Data',d.dataIntervento],['Tecnico',d.tecnico],[],
-    ['DATI CLIENTE'],['Nome',d.nome],['Cognome',d.cognome],['Azienda',d.azienda],
-    ['Indirizzo',d.indirizzo],['Telefono',d.telefono],['E-mail',d.email],[],['Note',d.note]
+    ['N Cedolino', d.numCedolino],['Data', d.dataIntervento],['Tecnico', d.tecnico],[],
+    ['DATI CLIENTE'],
+    ['Nome', d.nome],['Cognome', d.cognome],['Azienda', d.azienda],
+    ['Indirizzo', d.indirizzo],['Telefono', d.telefono],['Email', d.email],[],['Note', d.note]
   ]);
-  ws1['!cols']=[{wch:18},{wch:42}];
-  XLSX.utils.book_append_sheet(wb,ws1,'Dati Cliente');
-  const ws2=XLSX.utils.aoa_to_sheet([
-    ['Mezzo','Targa','Età Batteria','Nota di Intervento','Esito Intervento'],
-    ...d.veicoli.map(v=>[v.mezzo,v.targa,v.eta,v.nota,v.esito])
-  ]);
-  ws2['!cols']=[{wch:16},{wch:12},{wch:14},{wch:42},{wch:28}];
-  XLSX.utils.book_append_sheet(wb,ws2,'Veicoli');
-  XLSX.writeFile(wb,'Italbatterie_'+(d.azienda||'cedolino').replace(/\s+/g,'_')+'_'+(d.dataIntervento||'data')+'.xlsx');
-  toast('File Excel scaricato ✓','success');
+  ws1['!cols'] = [{wch:18},{wch:42}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Dati Cliente');
+  var ws2 = XLSX.utils.aoa_to_sheet([
+    ['Mezzo','Targa','Eta Batteria','Nota Intervento','Esito'],
+    ].concat(d.veicoli.map(function(v){ return [v.mezzo,v.targa,v.eta,v.nota,v.esito]; }))
+  );
+  ws2['!cols'] = [{wch:16},{wch:12},{wch:14},{wch:42},{wch:28}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Veicoli');
+  var fn = 'Italbatterie_' + (d.azienda||'cedolino').replace(/\s+/g,'_') + '_' + (d.dataIntervento||'data') + '.xlsx';
+  XLSX.writeFile(wb, fn);
+  toast('File Excel scaricato', 'success');
 }
 
-// ─── RESET ─────────────────────────────────────────────────
+// ─── RESET ───────────────────────────────────────────────────────────
 function resetForm() {
-  if(!confirm('Azzerare il modulo? I dati non salvati andranno persi.')) return;
-  ['nome','cognome','azienda','indirizzo','telefono','email','tecnico','note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('vbody').innerHTML='';
-  document.getElementById('vcardList').innerHTML='';
-  rowN=0; clearSig();
-  document.getElementById('tsigInput').value='';
-  document.getElementById('tsigPrev').textContent='';
-  document.getElementById('dataInt').value=new Date().toISOString().split('T')[0];
+  if (!confirm('Azzerare il modulo? I dati non salvati andranno persi.')) return;
+  ['nome','cognome','azienda','indirizzo','telefono','email','tecnico','note'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('vbody').innerHTML    = '';
+  document.getElementById('vcardList').innerHTML= '';
+  rowN = 0;
+  clearSig();
+  document.getElementById('tsigInput').value   = '';
+  document.getElementById('tsigPrev').textContent = '';
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
   generaNumero(); addRow(); upd();
-  toast('Nuovo cedolino pronto','info');
+  toast('Nuovo cedolino pronto', 'info');
 }
 
-// ─── NUMERO CEDOLINO DA SHEETS ─────────────────────────────
+// ─── NUMERO DA SHEETS ────────────────────────────────────────────────
 function generaNumero() {
-  const now=new Date();
-  const yy=now.getFullYear();
-  const mm=String(now.getMonth()+1).padStart(2,'0');
-  const dd=String(now.getDate()).padStart(2,'0');
-  const f=document.getElementById('numCed');
-  f.value='Caricamento…'; f.disabled=true;
-  if(!cfg.gasUrl) { f.value=`IB-${yy}-${mm}-${dd}-001`; f.disabled=false; return; }
-  fetch(cfg.gasUrl+'?action=getLastNumber',{method:'GET',mode:'cors'})
-    .then(r=>r.json()).then(res=>{
-      const n=String((res.lastNumber||0)+1).padStart(3,'0');
-      f.value=`IB-${yy}-${mm}-${dd}-${n}`; f.disabled=false;
-    }).catch(()=>{
-      f.value=`IB-${yy}-${mm}-${dd}-001`; f.disabled=false;
+  var now = new Date();
+  var yy  = now.getFullYear();
+  var mm  = String(now.getMonth()+1).padStart(2,'0');
+  var dd  = String(now.getDate()).padStart(2,'0');
+  var f   = document.getElementById('numCed');
+  f.value    = 'Caricamento…';
+  f.disabled = true;
+  if (!cfg.gasUrl) { f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-001'; f.disabled=false; return; }
+  fetch(cfg.gasUrl + '?action=getLastNumber', { method:'GET', mode:'cors' })
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      var n = String((res.lastNumber||0)+1).padStart(3,'0');
+      f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-'+n;
+      f.disabled = false;
+    })
+    .catch(function() {
+      f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-001';
+      f.disabled = false;
     });
 }
 
-// ─── TOAST ─────────────────────────────────────────────────
-let tTimer;
-function toast(msg,type='info') {
-  const t=document.getElementById('toast');
-  document.getElementById('toastMsg').textContent=msg;
-  t.className=type; t.classList.add('show');
-  clearTimeout(tTimer); tTimer=setTimeout(()=>t.classList.remove('show'),4200);
+// ─── TOAST ───────────────────────────────────────────────────────────
+var tTimer;
+function toast(msg, type) {
+  type = type || 'info';
+  var t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = type; t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(function(){ t.classList.remove('show'); }, 4200);
 }
 
-// ─── INIT ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  try{ const s=JSON.parse(localStorage.getItem('ib_cfg')||'{}'); cfg=Object.assign(cfg,s); }catch(e){}
-  document.getElementById('dataInt').value=new Date().toISOString().split('T')[0];
-  addRow(); generaNumero(); upd();
+// ─── INIT ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  try { var s=JSON.parse(localStorage.getItem('ib_cfg')||'{}'); if(s.gasUrl) cfg.gasUrl=s.gasUrl; if(s.senderEmail) cfg.senderEmail=s.senderEmail; } catch(e){}
+  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
+  addRow();
+  generaNumero();
+  upd();
 });
 </script>
 </body>

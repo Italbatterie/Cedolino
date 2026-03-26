@@ -460,7 +460,7 @@
 
 <script>
 // ─── CONFIG ──────────────────────────────────────────────
-let cfg = { gasUrl: f"https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec" };
+let cfg = { gasUrl: 'https://script.google.com/macros/s/AKfycbyqRD_rmRmvhZNMvm29v3t42DZW8ZTxCYxDE9D8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec' };8ktk32KAD64L57i7gmmQosUMNl2ilmQ/exec" };
 try { const s = JSON.parse(localStorage.getItem('ib_cfg')||'{}'); cfg = Object.assign(cfg,s); } catch(e){}
 
 function loadCfg() {
@@ -793,9 +793,13 @@ function openPDFPreview() {
       const container = document.getElementById('pdfCanvasContainer');
 
       // Usa iframe per preview (compatibile con tutti i browser)
+      // Usa blob URL (i browser bloccano data: URI negli iframe)
+      const pdfBytes = _lastPdfDoc.output('arraybuffer');
+      const blob = new Blob([pdfBytes], {type: 'application/pdf'});
+      const blobUrl = URL.createObjectURL(blob);
       const iframe = document.createElement('iframe');
-      iframe.style.cssText='width:210mm;height:297mm;border:none;display:block';
-      iframe.src = pdfData;
+      iframe.style.cssText='width:210mm;height:min(297mm,80vh);border:none;display:block';
+      iframe.src = blobUrl;
       container.appendChild(iframe);
 
       document.getElementById('pdfSpinner').style.display='none';

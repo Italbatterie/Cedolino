@@ -6,7 +6,6 @@
   <title>Italbatterie — Cedolino Intervento</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -462,9 +461,9 @@
 
 <div id="toast"><span class="tdot"></span><span id="toastMsg"></span></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+
+  
 
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────
@@ -863,74 +862,10 @@ function downloadPDF() {
   _lastPdfDoc.save('Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf');
 }
 function allegaEInvia() {
-  if (!_lastPdfDoc) { toast("Genera prima l'anteprima PDF.", 'error'); return; }
-  var d = collect();
-  if (!d.email) { toast("Inserisci l'e-mail del cliente nel modulo.", 'error'); return; }
-  if (!cfg.gasUrl) { toast("Configura prima l'URL dello script Google Apps.", 'error'); openSetup(); return; }
-
-  var btn = document.getElementById('btnAllegaInvia');
-  if (btn) { btn.disabled = true; btn.textContent = 'Invio in corso...'; }
-
-  function resetBtn() {
-    if (btn) { btn.disabled = false; btn.textContent = '📎 Allega e Invia'; }
-  }
-
-  // Genera PDF base64 (solo la parte dati, senza prefisso data:...)
-  var pdfBase64 = _lastPdfDoc.output('datauristring').split(',')[1];
-  var nomePDF   = 'Cedolino_' + (d.numCedolino||'IB') + '_' + (d.azienda||'cliente').replace(/\s+/g,'_') + '.pdf';
-
-  var veicoliTesto = (d.veicoli||[]).map(function(v,i){
-    return (i+1)+'. '+(v.mezzo||'--')+' | Targa: '+(v.targa||'--')+
-           ' | Eta batteria: '+(v.eta||'--')+
-           '\n   Nota: '+(v.nota||'--')+
-           '\n   Esito: '+(v.esito||'--');
-  }).join('\n');
-
-  var payload = {
-    action:         'submitCedolino',
-    numCedolino:    d.numCedolino    || '',
-    dataIntervento: d.dataIntervento || '',
-    tecnico:        d.tecnico        || '',
-    nome:           d.nome           || '',
-    cognome:        d.cognome        || '',
-    azienda:        d.azienda        || '',
-    indirizzo:      d.indirizzo      || '',
-    telefono:       d.telefono       || '',
-    email:          d.email          || '',
-    note:           d.note           || '',
-    veicoli:        d.veicoli        || [],
-    firma:          (d.firma && d.firma.indexOf('TEXT:')===0) ? d.firma : null,
-    timestamp:      d.timestamp,
-    pdfBase64:      pdfBase64,
-    pdfName:        nomePDF
-  };
-
-  fetch(cfg.gasUrl, {
-    method:  'POST',
-    mode:    'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body:    JSON.stringify(payload)
-  }).then(function() {
-    toast('Cedolino inviato a ' + d.email + ' ✓', 'success');
-    resetBtn();
-  }).catch(function() {
-    // Fallback XHR
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', cfg.gasUrl, true);
-    xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
-    xhr.timeout = 20000;
-    xhr.onload    = function(){ toast('Cedolino inviato a ' + d.email + ' ✓', 'success'); resetBtn(); };
-    xhr.onerror   = function(){ toast('Errore di rete. Riprova.', 'error'); resetBtn(); };
-    xhr.ontimeout = function(){ toast('Timeout. Riprova.', 'error'); resetBtn(); };
-    xhr.send(JSON.stringify(payload));
-  });
+  closePDFPreview();
+  gasPost('submitCedolino');
 }
-
-
-
 // ─── INVIO ───────────────────────────────────────────────────────────
-// Strategia: fetch normale (con CORS abilitato lato GAS).
-// Il PDF base64 viene incluso nel payload e allegato dallo script GAS.
 function gasPost(action) {
   var d   = collect();
   var err = validate(d);
@@ -941,9 +876,11 @@ function gasPost(action) {
   var labelId = action === 'submitCedolino' ? 'sendLabel' : 'dbLabel';
   var spinId  = action === 'submitCedolino' ? 'sendSpin'  : 'dbSpin';
   var origLbl = action === 'submitCedolino' ? 'Invia Cedolino' : 'Invia a Database';
-  var okMsg   = action === 'submitCedolino' ? 'Dati salvati nel database ✓' : 'Dati salvati nel database ✓';
+  var okMsg   = action === 'submitCedolino'
+    ? 'Cedolino inviato a ' + d.email + ' ✓'
+    : 'Dati salvati nel database ✓';
 
-  document.getElementById(labelId).textContent = 'Invio...';
+  document.getElementById(labelId).textContent = 'Invio…';
   document.getElementById(spinId).classList.add('show');
   document.getElementById(btnId).disabled = true;
 
@@ -952,11 +889,8 @@ function gasPost(action) {
     document.getElementById(spinId).classList.remove('show');
     document.getElementById(btnId).disabled = false;
   }
-  function onOk()   { toast(okMsg, 'success'); resetUI(); }
-  function onFail(e){ toast('Errore: ' + (e||'connessione fallita'), 'error'); resetUI(); }
 
-  // Payload SENZA pdf (il PDF lo manda allegaEInvia via EmailJS separatamente)
-  var payload = {
+  var payload = JSON.stringify({
     action:         action,
     numCedolino:    d.numCedolino,
     dataIntervento: d.dataIntervento,
@@ -969,121 +903,27 @@ function gasPost(action) {
     email:          d.email,
     note:           d.note,
     veicoli:        d.veicoli,
-    firma:          (d.firma && d.firma.indexOf('data:image') === 0) ? null : d.firma,
+    firma:          (d.firma && d.firma.indexOf('TEXT:') === 0) ? d.firma : null,
     timestamp:      d.timestamp
-  };
-
-  var body = JSON.stringify(payload);
+  });
 
   fetch(cfg.gasUrl, {
     method:  'POST',
     mode:    'no-cors',
     headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body:    body
-  }).then(onOk).catch(function() {
-    // XHR fallback
-    try {
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', cfg.gasUrl, true);
-      xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
-      xhr.timeout = 15000;
-      xhr.onload    = function(){ onOk(); };
-      xhr.onerror   = function(){ onFail('rete'); };
-      xhr.ontimeout = function(){ onFail('timeout'); };
-      xhr.send(body);
-    } catch(ex) { onFail(ex.message); }
+    body:    payload
+  })
+  .then(function() { toast(okMsg, 'success'); resetUI(); })
+  .catch(function() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', cfg.gasUrl, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+    xhr.timeout = 15000;
+    xhr.onload    = function() { toast(okMsg, 'success'); resetUI(); };
+    xhr.onerror   = function() { toast('Errore di rete.', 'error'); resetUI(); };
+    xhr.ontimeout = function() { toast('Timeout. Riprova.', 'error'); resetUI(); };
+    xhr.send(payload);
   });
 }
 
-// ─── EXCEL ───────────────────────────────────────────────────────────
-function exportExcel() {
-  var d  = collect();
-  var wb = XLSX.utils.book_new();
-  var ws1 = XLSX.utils.aoa_to_sheet([
-    ['ITALBATTERIE — CEDOLINO INTERVENTO'],[],
-    ['N Cedolino', d.numCedolino],['Data', d.dataIntervento],['Tecnico', d.tecnico],[],
-    ['DATI CLIENTE'],
-    ['Nome', d.nome],['Cognome', d.cognome],['Azienda', d.azienda],
-    ['Indirizzo', d.indirizzo],['Telefono', d.telefono],['Email', d.email],[],['Note', d.note]
-  ]);
-  ws1['!cols'] = [{wch:18},{wch:42}];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Dati Cliente');
-  var ws2 = XLSX.utils.aoa_to_sheet([
-    ['Mezzo','Targa','Eta Batteria','Nota Intervento','Esito'],
-    ].concat(d.veicoli.map(function(v){ return [v.mezzo,v.targa,v.eta,v.nota,v.esito]; }))
-  );
-  ws2['!cols'] = [{wch:16},{wch:12},{wch:14},{wch:42},{wch:28}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Veicoli');
-  var fn = 'Italbatterie_' + (d.azienda||'cedolino').replace(/\s+/g,'_') + '_' + (d.dataIntervento||'data') + '.xlsx';
-  XLSX.writeFile(wb, fn);
-  toast('File Excel scaricato', 'success');
-}
-
-// ─── RESET ───────────────────────────────────────────────────────────
-function resetForm() {
-  if (!confirm('Azzerare il modulo? I dati non salvati andranno persi.')) return;
-  ['nome','cognome','azienda','indirizzo','telefono','email','tecnico','note'].forEach(function(id){
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('vbody').innerHTML    = '';
-  document.getElementById('vcardList').innerHTML= '';
-  rowN = 0;
-  clearSig();
-  document.getElementById('tsigInput').value   = '';
-  document.getElementById('tsigPrev').textContent = '';
-  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
-  generaNumero(); addRow(); upd();
-  toast('Nuovo cedolino pronto', 'info');
-}
-
-// ─── NUMERO DA SHEETS ────────────────────────────────────────────────
-function generaNumero() {
-  var now = new Date();
-  var yy  = now.getFullYear();
-  var mm  = String(now.getMonth()+1).padStart(2,'0');
-  var dd  = String(now.getDate()).padStart(2,'0');
-  var f   = document.getElementById('numCed');
-  f.value    = 'Caricamento…';
-  f.disabled = true;
-  if (!cfg.gasUrl) { f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-001'; f.disabled=false; return; }
-  fetch(cfg.gasUrl + '?action=getLastNumber', { method:'GET', mode:'cors' })
-    .then(function(r){ return r.json(); })
-    .then(function(res) {
-      var n = String((res.lastNumber||0)+1).padStart(3,'0');
-      f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-'+n;
-      f.disabled = false;
-    })
-    .catch(function() {
-      f.value = 'IB-'+yy+'-'+mm+'-'+dd+'-001';
-      f.disabled = false;
-    });
-}
-
-// ─── TOAST ───────────────────────────────────────────────────────────
-var tTimer;
-function toast(msg, type) {
-  type = type || 'info';
-  var t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  t.className = type; t.classList.add('show');
-  clearTimeout(tTimer);
-  tTimer = setTimeout(function(){ t.classList.remove('show'); }, 4200);
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  // Inizializza EmailJS
-  emailjs.init('MY0CY2cp7d8h8C-oQ');
-  try { var s=JSON.parse(localStorage.getItem('ib_cfg')||'{}'); if(s.gasUrl) cfg.gasUrl=s.gasUrl; if(s.senderEmail) cfg.senderEmail=s.senderEmail; } catch(e){}
-  document.getElementById('dataInt').value = new Date().toISOString().split('T')[0];
-  // Mostra "Condividi" solo se il browser supporta Web Share API con file
-  if (navigator.share && navigator.canShare) {
-    document.getElementById('btnShare').style.display = 'inline-flex';
-  }
-  addRow();
-  generaNumero();
-  upd();
-});
-</script>
-</body>
-</html>
+>
